@@ -1,0 +1,6 @@
+# Ignore everything except src
+package-lock.json
+dist
+docker
+logs
+node_modules

@@ -8,11 +8,32 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import config from './config/config'
+import { graphqlHTTP } from 'express-graphql'
+import { loadFilesSync } from '@graphql-tools/load-files'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { formatErrorResponse } from './util/ErrorGQL'
 
 const app: Application = express()
 
-// Middleware
-app.use(helmet())
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'script-src': [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'"
+        ],
+        'style-src': [
+          "'self'",
+          "'unsafe-inline'"
+        ]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+)
 app.use(cookieParser())
 app.use(
   cors({
@@ -24,7 +45,35 @@ app.use(
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../', 'public')))
 
-// Routes
+// Load GraphQL schema and resolvers
+const typeDefs = loadFilesSync(path.join(__dirname, './graphql/schemes/**/*.graphql'))
+const resolvers = loadFilesSync(path.join(__dirname, './graphql/resolvers/**/*.resolvers.ts'))
+
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+})
+
+// GraphQL Middleware
+app.use(
+  '/api/v1/graphql',
+  graphqlHTTP({
+    schema,
+    graphiql: config.ENV === 'development',
+    customFormatErrorFn: (error) => formatErrorResponse(error, config.ENV === 'development'),
+    extensions: ({ result }) => {
+      if (result?.data) {
+        return {
+          success: true,
+          timestamp: new Date().toISOString()
+        }
+      }
+      return {}
+    }
+  })
+)
+
+// REST Routes
 app.use('/api/v1', router)
 
 // 404 Handler

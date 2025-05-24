@@ -35,12 +35,18 @@ const consoleLogFormat = format.printf((info) => {
 
   const customMessage: string = italic(cyan(message as string))
 
-  const customMeta = util.inspect(meta, {
-    showHidden: false,
-    depth: null,
-    colors: true
-  })
+  let customMeta = '';
 
+  if (typeof meta === 'object' && meta !== null && 'query' in meta) {
+    customMeta = `${magenta('QUERY')} ${cyan((meta as { query: string }).query)}`;
+  } else {
+    customMeta = util.inspect(meta, {
+      showHidden: false,
+      depth: null,
+      colors: true,
+    });
+  }
+  
   const customLog = `${customLevel} [${customTimestamp}] ${customMessage}\n${magenta('META')} ${customMeta}\n`
 
   return customLog

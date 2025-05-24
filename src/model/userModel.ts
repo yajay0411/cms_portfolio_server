@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema<IUser>(
       required: true,
       select: false
     },
+    profile_image: {
+      type: String,
+      required: false,
+      default: null
+    },
     role: {
       type: String,
       default: EUserRole.USER,

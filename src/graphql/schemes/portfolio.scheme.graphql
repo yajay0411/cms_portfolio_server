@@ -1,0 +1,22 @@
+type Portfolio {
+  _id: ID!
+  entity: String!
+  name: String!
+  summary: String!
+  landingPagePhoto: String
+  active: Boolean!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  getPortfolio(id: ID!): Portfolio
+  getPortfolioByEntityId(entity_id: ID!): Portfolio
+  getPortfolios(
+    active: Boolean
+    createdBy: ID
+    limit: Int = 10
+    offset: Int = 0
+  ): [Portfolio!]!
+}

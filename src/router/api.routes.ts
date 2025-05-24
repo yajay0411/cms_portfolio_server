@@ -1,13 +1,21 @@
 import { Router } from 'express'
-import authRoutes from './auth.routes'
 import coreRoutes from './core.routes'
+import authRoutes from './auth.routes'
+import userRoutes from './user.routes'
+import portfolioRoutes from './portfolio.routes'
 
 const router = Router()
 
 // Core routes
-router.use('/', coreRoutes);
+router.use('/', coreRoutes)
 
 // Auth routes
-router.use('/auth', authRoutes);
+router.use('/auth', authRoutes)
 
-export default router;
+// User routes
+router.use('/user', userRoutes)
+
+// Portfolio routes
+router.use('/portfolio', portfolioRoutes)
+
+export default router

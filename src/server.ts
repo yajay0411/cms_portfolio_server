@@ -1,14 +1,14 @@
 import app from './app'
 import config from './config/config'
 import { initRateLimiter } from './config/rateLimiter'
-import databaseService from './service/databaseService'
+import coreDatabase from './service/database/core.database';
 import logger from './util/logger'
 
 const server = app.listen(config.PORT)
 ;(async () => {
   try {
     // Database Connection
-    const connection = await databaseService.connect()
+    const connection = await coreDatabase.connect()
     logger.info(`DATABASE_CONNECTED_SUCCESSFULLY`, {
       meta: {
         CONNECTION_NAME: connection.name

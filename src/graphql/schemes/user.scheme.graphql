@@ -1,0 +1,35 @@
+type User {
+  _id: ID!
+  name: String!
+  emailAddress: String!
+  phoneNumber: PhoneNumber
+  countryCode: String
+  internationalNumber: String
+  timezone: String
+  profileImage: String
+  role: UserRole!
+  lastLoginAt: DateTime
+  consent: Boolean
+}
+
+type PhoneNumber {
+  isoCode: String
+  countryCode: String
+  internationalNumber: String
+  nationalNumber: String
+  isValid: Boolean
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  GUEST
+}
+
+scalar DateTime
+
+type Query {
+  getUser(id: ID!): User
+  getUsers: [User!]!
+  currentUser: User
+}

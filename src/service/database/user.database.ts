@@ -1,18 +1,7 @@
-import mongoose from 'mongoose'
-import config from '../config/config'
-import userModel from '../model/userModel'
-import { IRefreshToken, IUser } from '../types/user.types'
-import refreshTokenModel from '../model/refreshTokenModel'
+import userModel from '../../model/userModel'
+import { IUser } from '../../types/user.types'
 
 export default {
-  connect: async () => {
-    try {
-      await mongoose.connect(config.DATABASE_URL)
-      return mongoose.connection
-    } catch (err) {
-      throw err
-    }
-  },
   findUserByEmailAddress: (emailAddress: string, select: string = '') => {
     return userModel
       .findOne({
@@ -37,13 +26,16 @@ export default {
       'passwordReset.token': token
     })
   },
-  createRefreshToken: (payload: IRefreshToken) => {
-    return refreshTokenModel.create(payload)
+  getAllUsersCount: (query: any) => {
+    return userModel.countDocuments(query).lean()
   },
-  deleteRefreshToken: (token: string) => {
-    return refreshTokenModel.deleteOne({ token: token })
+  getAllUsers: (query: any) => {
+    return userModel.find(query).lean()
   },
-  findRefreshToken: (token: string) => {
-    return refreshTokenModel.findOne({ token })
+  updateUser: (id: string, payload: Partial<any>) => {
+    return userModel.findByIdAndUpdate(id, payload, { new: true }).lean()
+  },
+  deleteUser: (id: string) => {
+    return userModel.findByIdAndDelete(id).lean()
   }
 }

@@ -10,7 +10,7 @@ import {
   ValidateLoginBody,
   ValidateRegisterBody,
   ValidateResetPasswordBody
-} from '../service/validationService'
+} from '../validation/auth.validation'
 import {
   IChangePasswordRequestBody,
   IDecryptedJwt,
@@ -18,17 +18,18 @@ import {
   ILoginUserRequestBody,
   IRefreshToken,
   IRegisterUserRequestBody,
-  IResetPasswordRequestBody,
-  IUser,
-  IUserWithId
-} from '../types/user.types'
-import databaseService from '../service/databaseService'
+  IResetPasswordRequestBody
+} from '../types/auth.types'
+import { IUser, IUserWithId } from '../types/user.types'
 import { EUserRole } from '../constant/userConstant'
 import config from '../config/config'
-// import emailService from '../service/emailService'
-// import logger from '../util/logger'
+import emailService from '../service/emailService'
+import logger from '../util/logger'
 import dayjs from 'dayjs'
-import { EApplicationEnvironment } from '../constant/application'
+import { EApplicationEnvironment, EStorageKey } from '../constant/application'
+import authDatabase from '../service/database/auth.database'
+import userDatabase from '../service/database/user.database'
+import { uploadToCloudinary } from '../util/fileUpload'
 
 interface IRegisterRequest extends Request {
   body: IRegisterUserRequestBody
@@ -72,6 +73,12 @@ export default {
     try {
       const { body } = req as IRegisterRequest
 
+      // If a new file was uploaded, process it
+      if (req.file) {
+        const imageUrl = await uploadToCloudinary(req.file.path, 'profile')
+        body.profile_image = imageUrl
+      }
+
       // * Body Validation
       const { error, value } = validateJoiSchema<IRegisterUserRequestBody>(ValidateRegisterBody, body)
       if (error) {
@@ -79,10 +86,16 @@ export default {
       }
 
       // Destructure Value
-      const { name, emailAddress, password, phoneNumber, consent } = value
+      const { name, emailAddress, password, phoneNumber, consent, profile_image } = value
+
+      // * Check User Existence using Email Address
+      const user = await userDatabase.findUserByEmailAddress(emailAddress)
+      if (user) {
+        return httpError(next, new Error(responseMessage.ALREADY_EXIST('user', emailAddress)), req, 403)
+      }
 
       // * Phone Number Validation & Parsing
-      const { countryCode, isoCode, internationalNumber } = quicker.parsePhoneNumber(`+` + phoneNumber)
+      const { countryCode, isoCode, internationalNumber } = quicker.parsePhoneNumber(`+91` + phoneNumber)
 
       if (!countryCode || !isoCode || !internationalNumber) {
         return httpError(next, new Error(responseMessage.INVALID_PHONE_NUMBER), req, 422)
@@ -93,12 +106,6 @@ export default {
 
       if (!timezone || timezone.length === 0) {
         return httpError(next, new Error(responseMessage.INVALID_PHONE_NUMBER), req, 422)
-      }
-
-      // * Check User Existence using Email Address
-      const user = await databaseService.findUserByEmailAddress(emailAddress)
-      if (user) {
-        return httpError(next, new Error(responseMessage.ALREADY_EXIST('user', emailAddress)), req, 403)
       }
 
       // * Encrypting Password
@@ -112,6 +119,7 @@ export default {
       const payload: IUser = {
         name,
         emailAddress,
+        profile_image: profile_image || null,
         phoneNumber: {
           countryCode: countryCode,
           isoCode: isoCode,
@@ -136,43 +144,46 @@ export default {
       }
 
       // Create New User
-      const newUser = await databaseService.registerUser(payload)
+      const newUser = await userDatabase.registerUser(payload)
 
       // * Send Email
-      // const confirmationUrl = `${config.CLIENT_URL}/confirmation/${token}?code=${code}`
-      // const to = [emailAddress]
-      // const subject = 'Confirm Your Account'
-      // const text = `Hey ${name}, Please confirm your account by clicking on the link below\n\n${confirmationUrl}`
+      const confirmationUrl = `${config.CLIENT_URL}/confirmation/${token}?code=${code}`
+      const to = [emailAddress]
+      const subject = 'Confirm Your Account'
+      const html = await emailService.renderTemplate('verify_account', {
+        name: newUser.name,
+        confirmationUrl: confirmationUrl
+      })
 
-      // emailService.sendEmail(to, subject, text).catch((err) => {
-      //   logger.error(`EMAIL_SERVICE`, {
-      //     meta: err
-      //   })
-      // })
+      emailService.sendEmail(to, subject, html).catch((err) => {
+        logger.error(`EMAIL_SERVICE`, {
+          meta: err
+        })
+      })
 
       // Send Response
-      httpResponse(req, res, 201, responseMessage.SUCCESS, { _id: newUser._id })
+      httpResponse(req, res, 201, responseMessage.SUCCESS, { _id: newUser._id, user: newUser })
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
   confirmation: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { params, query } = req as IConfirmRequest
 
-      // Todo:
       const { token } = params
       const { code } = query
 
       // * Fetch User By Token & Code
-      const user = await databaseService.findUserByConfirmationTokenAndCode(token, code)
+      const user = await userDatabase.findUserByConfirmationTokenAndCode(token, code)
       if (!user) {
         return httpError(next, new Error(responseMessage.INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE), req, 400)
       }
 
       // * Check if Account already confirmed
       if (user.accountConfirmation.status) {
-        return httpError(next, new Error(responseMessage.ACCOUNT_ALREADY_CONFIRMED), req, 400)
+        return httpResponse(req, res, 200, responseMessage.ACCOUNT_ALREADY_CONFIRMED)
       }
 
       // * Account confirm
@@ -182,21 +193,21 @@ export default {
       await user.save()
 
       // * Account Confirmation Email
-      // const to = [user.emailAddress]
-      // const subject = 'Account Confirmed'
-      // const text = `Your account has been confirmed`
-
-      // emailService.sendEmail(to, subject, text).catch((err) => {
-      //   logger.error(`EMAIL_SERVICE`, {
-      //     meta: err
-      //   })
-      // })
+      const to = [user.emailAddress]
+      const subject = 'Account Confirmed'
+      const html = 'Account has been confirmed successfully'
+      emailService.sendEmail(to, subject, html).catch((err) => {
+        logger.error(`EMAIL_SERVICE`, {
+          meta: err
+        })
+      })
 
       httpResponse(req, res, 200, responseMessage.SUCCESS)
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
   login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { body } = req as ILoginRequest
@@ -210,9 +221,32 @@ export default {
       const { emailAddress, password } = value
 
       // * Find User
-      const user = await databaseService.findUserByEmailAddress(emailAddress, `+password`)
+      const user = await userDatabase.findUserByEmailAddress(emailAddress, `+password`)
       if (!user) {
         return httpError(next, new Error(responseMessage.NOT_FOUND('user')), req, 404)
+      }
+
+      // * Validate account status
+      if (!user.accountConfirmation.status) {
+      // * Account Confirmation Object
+      const token = quicker.generateRandomId()
+      const code = quicker.generateOtp(6);
+
+      // * Send Email
+      const confirmationUrl = `${config.CLIENT_URL}/confirmation/${token}?code=${code}`
+      const to = [emailAddress]
+      const subject = 'Confirm Your Account'
+      const html = await emailService.renderTemplate('verify_account', {
+        name: user.name,
+        confirmationUrl: confirmationUrl
+      })
+
+      emailService.sendEmail(to, subject, html).catch((err) => {
+        logger.error(`EMAIL_SERVICE`, {
+          meta: err
+        })
+      })
+        return httpError(next, new Error(responseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
       }
 
       // * Validate Password
@@ -222,20 +256,28 @@ export default {
       }
 
       // * Access Token & Refresh Token
-      const accessToken = quicker.generateToken(
+      const client_AccessToken = quicker.generateToken(
         {
           userId: user.id
         },
-        config.ACCESS_TOKEN.SECRET,
-        config.ACCESS_TOKEN.EXPIRY
+        config.CLIENT_ACCESS_TOKEN.SECRET,
+        config.CLIENT_ACCESS_TOKEN.EXPIRY
       )
 
-      const refreshToken = quicker.generateToken(
+      const api_AccessToken = quicker.generateToken(
         {
           userId: user.id
         },
-        config.REFRESH_TOKEN.SECRET,
-        config.REFRESH_TOKEN.EXPIRY
+        config.API_ACCESS_TOKEN.SECRET,
+        config.API_ACCESS_TOKEN.EXPIRY
+      )
+
+      const api_RefreshToken = quicker.generateToken(
+        {
+          userId: user.id
+        },
+        config.API_REFRESH_TOKEN.SECRET,
+        config.API_REFRESH_TOKEN.EXPIRY
       )
 
       // * Last Login Information
@@ -244,50 +286,104 @@ export default {
 
       // * Refresh Token Store
       const refreshTokenPayload: IRefreshToken = {
-        token: refreshToken
+        token: api_RefreshToken
       }
 
-      await databaseService.createRefreshToken(refreshTokenPayload)
+      await authDatabase.createRefreshToken(refreshTokenPayload)
 
       // * Cookie Send
       const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
 
       res
-        .cookie('accessToken', accessToken, {
-          path: '/api/v1',
+        .cookie(EStorageKey.CLIENT_ACCESS_TOKEN, client_AccessToken, {
+          path: '/',
           domain: DOMAIN,
           sameSite: 'strict',
-          maxAge: 1000 * config.ACCESS_TOKEN.EXPIRY,
-          httpOnly: true,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+          maxAge: 1000 * config.CLIENT_ACCESS_TOKEN.EXPIRY,
+          httpOnly: false,
           secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
         })
-        .cookie('refreshToken', refreshToken, {
-          path: '/api/v1',
+        .cookie(EStorageKey.API_ACCESS_TOKEN, api_AccessToken, {
+          path: '/',
           domain: DOMAIN,
           sameSite: 'strict',
-          maxAge: 1000 * config.REFRESH_TOKEN.EXPIRY,
+          maxAge: 1000 * config.API_ACCESS_TOKEN.EXPIRY,
           httpOnly: true,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
+        .cookie(EStorageKey.API_REFRESH_TOKEN, api_RefreshToken, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.API_REFRESH_TOKEN.EXPIRY,
+          httpOnly: true,
           secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
         })
 
-      httpResponse(req, res, 200, responseMessage.SUCCESS, {
-        accessToken,
-        refreshToken
-      })
+      // Send Response
+      httpResponse(req, res, 201, responseMessage.SUCCESS, { user: user })
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
-  selfIdentification: (req: Request, res: Response, next: NextFunction) => {
+
+  selfIdentification: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { authenticatedUser } = req as ISelfIdentificationRequest
-      httpResponse(req, res, 200, responseMessage.SUCCESS, authenticatedUser)
+      const request = req as ISelfIdentificationRequest
+      const { cookies } = request
+      const { apiOnly_AccessToken } = cookies as {
+        apiOnly_AccessToken: string | undefined
+      }
+
+      if (!apiOnly_AccessToken) {
+        return httpError(next, new Error(responseMessage.INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE), req, 400)
+      }
+
+      const { userId } = quicker.verifyToken(apiOnly_AccessToken, config.API_ACCESS_TOKEN.SECRET) as IDecryptedJwt
+      if (!userId) {
+        return httpError(next, new Error(responseMessage.UNAUTHORIZED), req, 401)
+      }
+
+      // Find User by id
+      const user = await userDatabase.findUserById(userId)
+      if (!user) {
+        // Cookies clear
+        const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
+        res
+          .clearCookie(EStorageKey.CLIENT_ACCESS_TOKEN, {
+            path: '/',
+            domain: DOMAIN,
+            sameSite: 'strict',
+            maxAge: 1000 * config.CLIENT_ACCESS_TOKEN.EXPIRY,
+            httpOnly: false,
+            secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+          })
+          .clearCookie(EStorageKey.API_ACCESS_TOKEN, {
+            path: '/',
+            domain: DOMAIN,
+            sameSite: 'strict',
+            maxAge: 1000 * config.API_ACCESS_TOKEN.EXPIRY,
+            httpOnly: true,
+            secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+          })
+
+          .clearCookie(EStorageKey.API_REFRESH_TOKEN, {
+            path: '/',
+            domain: DOMAIN,
+            sameSite: 'strict',
+            maxAge: 1000 * config.API_REFRESH_TOKEN.EXPIRY,
+            httpOnly: true,
+            secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+          })
+        return httpError(next, new Error(responseMessage.INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE), req, 400)
+      }
+
+      return httpResponse(req, res, 200, responseMessage.SUCCESS, user)
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
   logout: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { cookies } = req
@@ -297,93 +393,94 @@ export default {
 
       if (refreshToken) {
         // db -> delete the refresh token
-        await databaseService.deleteRefreshToken(refreshToken)
+        await authDatabase.deleteRefreshToken(refreshToken)
       }
 
       const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
 
       // Cookies clear
-      res.clearCookie('accessToken', {
-        path: '/api/v1',
-        domain: DOMAIN,
-        sameSite: 'strict',
-        maxAge: 1000 * config.ACCESS_TOKEN.EXPIRY,
-        httpOnly: true,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
-      })
+      res
+        .clearCookie(EStorageKey.CLIENT_ACCESS_TOKEN, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.CLIENT_ACCESS_TOKEN.EXPIRY,
+          httpOnly: false,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
 
-      res.clearCookie('refreshToken', {
-        path: '/api/v1',
-        domain: DOMAIN,
-        sameSite: 'strict',
-        maxAge: 1000 * config.REFRESH_TOKEN.EXPIRY,
-        httpOnly: true,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
-      })
+        .clearCookie(EStorageKey.API_ACCESS_TOKEN, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.API_ACCESS_TOKEN.EXPIRY,
+          httpOnly: true,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
+
+        .clearCookie(EStorageKey.API_REFRESH_TOKEN, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.API_REFRESH_TOKEN.EXPIRY,
+          httpOnly: true,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
 
       httpResponse(req, res, 200, responseMessage.SUCCESS)
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
   refreshToken: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { cookies } = req
 
-      const { refreshToken, accessToken } = cookies as {
-        refreshToken: string | undefined
-        accessToken: string | undefined
+      const { apiOnly_RefreshToken } = cookies as {
+        apiOnly_RefreshToken: string | undefined
       }
 
-      if (accessToken) {
-        return httpResponse(req, res, 200, responseMessage.SUCCESS, {
-          accessToken
-        })
-      }
-
-      if (refreshToken) {
+      if (apiOnly_RefreshToken) {
         // fetch token from db
-        const rft = await databaseService.findRefreshToken(refreshToken)
-        if (rft) {
-          const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
+        const rft = await authDatabase.findRefreshToken(apiOnly_RefreshToken)
+        if (!rft) {
+          return httpError(next, new Error(responseMessage.INVALID_TOKEN), req, 400)
+        }
 
-          let userId: null | string = null
+        const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
+        let userId: null | string = null
 
-          try {
-            const decryptedJwt = quicker.verifyToken(refreshToken, config.REFRESH_TOKEN.SECRET) as IDecryptedJwt
-            userId = decryptedJwt.userId
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (err) {
-            userId = null
-          }
+        try {
+          const decryptedJwt = quicker.verifyToken(apiOnly_RefreshToken, config.API_REFRESH_TOKEN.SECRET) as IDecryptedJwt
+          userId = decryptedJwt.userId
+        } catch (err) {
+          userId = null
+        }
 
-          if (userId) {
-            // * Access Token
-            const accessToken = quicker.generateToken(
-              {
-                userId: userId
-              },
-              config.ACCESS_TOKEN.SECRET,
-              config.ACCESS_TOKEN.EXPIRY
-            )
+        if (userId) {
+          // * Access Token
+          const accessToken = quicker.generateToken(
+            {
+              userId: userId
+            },
+            config.API_ACCESS_TOKEN.SECRET,
+            config.API_ACCESS_TOKEN.EXPIRY
+          )
 
-            // Generate new Access Token
-            res.cookie('accessToken', accessToken, {
-              path: '/api/v1',
-              domain: DOMAIN,
-              sameSite: 'strict',
-              maxAge: 1000 * config.ACCESS_TOKEN.EXPIRY,
-              httpOnly: true,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-              secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
-            })
+          // Generate new Access Token
+          res.cookie(EStorageKey.API_ACCESS_TOKEN, accessToken, {
+            path: '/',
+            domain: DOMAIN,
+            sameSite: 'strict',
+            maxAge: 1000 * config.API_ACCESS_TOKEN.EXPIRY,
+            httpOnly: true,
+            secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+          })
 
-            return httpResponse(req, res, 200, responseMessage.SUCCESS, {
-              accessToken
-            })
-          }
+          return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+            accessToken
+          })
         }
       }
 
@@ -392,13 +489,11 @@ export default {
       httpError(next, err, req, 500)
     }
   },
+
   forgotPassword: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Todo:
-      // 1. Parsing Body
       const { body } = req as IForgotPasswordRequest
 
-      // 2. Validate Body
       const { error, value } = validateJoiSchema<IForgotPasswordRequestBody>(ValidateForgotPasswordBody, body)
       if (error) {
         return httpError(next, error, req, 422)
@@ -406,51 +501,46 @@ export default {
 
       const { emailAddress } = value
 
-      // 3. Find User by Email Address
-      const user = await databaseService.findUserByEmailAddress(emailAddress)
+      const user = await userDatabase.findUserByEmailAddress(emailAddress)
       if (!user) {
         return httpError(next, new Error(responseMessage.NOT_FOUND('user')), req, 404)
       }
 
-      // 4. Check if user account is confirmed
       if (!user.accountConfirmation.status) {
         return httpError(next, new Error(responseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
       }
 
-      // 5. Password Reset token & expiry
       const token = quicker.generateRandomId()
       const expiry = quicker.generateResetPasswordExpiry(15)
 
-      // 6. Update User
       user.passwordReset.token = token
       user.passwordReset.expiry = expiry
 
       await user.save()
 
-      // 7. Send Email
-      // const resetUrl = `${config.CLIENT_URL}/reset-password/${token}`
-      // const to = [emailAddress]
-      // const subject = 'Account Password Reset Requested'
-      // const text = `Hey ${user.name}, Please reset your account password by clicking on the link below\n\nLink will expire within 15 Minutes\n\n${resetUrl}`
+      // Send Email
+      const resetUrl = `${config.CLIENT_URL}/reset-password/${token}`
+      const to = [emailAddress]
+      const subject = 'Account Password Reset Requested'
+      const html = `Hey ${user.name}, Please reset your account password by clicking on the link below\n\nLink will expire within 15 Minutes\n\n${resetUrl}`
 
-      // emailService.sendEmail(to, subject, text).catch((err) => {
-      //   logger.error(`EMAIL_SERVICE`, {
-      //     meta: err
-      //   })
-      // })
+      emailService.sendEmail(to, subject, html).catch((err) => {
+        logger.error(`EMAIL_SERVICE`, {
+          meta: err
+        })
+      })
 
       httpResponse(req, res, 200, responseMessage.SUCCESS)
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
   resetPassword: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Todo
-      // * Body Parsing & Validation
       const { body, params } = req as IResetPasswordRequest
-
       const { token } = params
+
       const { error, value } = validateJoiSchema<IResetPasswordRequestBody>(ValidateResetPasswordBody, body)
       if (error) {
         return httpError(next, error, req, 422)
@@ -458,18 +548,15 @@ export default {
 
       const { newPassword } = value
 
-      // * Fetch user by token
-      const user = await databaseService.findUserByResetToken(token)
+      const user = await userDatabase.findUserByResetToken(token)
       if (!user) {
         return httpError(next, new Error(responseMessage.NOT_FOUND('user')), req, 404)
       }
 
-      // * Check if user account is confirmed
       if (!user.accountConfirmation.status) {
         return httpError(next, new Error(responseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
       }
 
-      // * Check expiry of the url
       const storedExpiry = user.passwordReset.expiry
       const currentTimestamp = dayjs().valueOf()
 
@@ -481,10 +568,8 @@ export default {
         return httpError(next, new Error(responseMessage.EXPIRED_URL), req, 400)
       }
 
-      // * Hash new password
       const hashedPassword = await quicker.hashPassword(newPassword)
 
-      // * User update
       user.password = hashedPassword
 
       user.passwordReset.token = null
@@ -493,25 +578,25 @@ export default {
       await user.save()
 
       // * Email send
-      // const to = [user.emailAddress]
-      // const subject = 'Account Password Reset'
-      // const text = `Hey ${user.name}, You account password has been reset successfully.`
+      const to = [user.emailAddress]
+      const subject = 'Account Password Reset'
+      const html = `Hey ${user.name}, You account password has been reset successfully.`
 
-      // emailService.sendEmail(to, subject, text).catch((err) => {
-      //   logger.error(`EMAIL_SERVICE`, {
-      //     meta: err
-      //   })
-      // })
+      emailService.sendEmail(to, subject, html).catch((err) => {
+        logger.error(`EMAIL_SERVICE`, {
+          meta: err
+        })
+      })
 
       httpResponse(req, res, 200, responseMessage.SUCCESS)
     } catch (err) {
       httpError(next, err, req, 500)
     }
   },
+
+  // not consumed 
   changePassword: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Todo
-      // * Body Parsing & Validation
       const { body, authenticatedUser } = req as IChangePasswordRequest
 
       const { error, value } = validateJoiSchema<IChangePasswordRequestBody>(ValidateChangePasswordBody, body)
@@ -520,7 +605,7 @@ export default {
       }
 
       // * Find User by id
-      const user = await databaseService.findUserById(authenticatedUser._id, '+password')
+      const user = await userDatabase.findUserById(authenticatedUser._id, '+password')
       if (!user) {
         return httpError(next, new Error(responseMessage.NOT_FOUND('user')), req, 404)
       }

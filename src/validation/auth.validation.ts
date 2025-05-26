@@ -13,7 +13,10 @@ export const ValidateRegisterBody = joi.object<IRegisterUserRequestBody, true>({
   phoneNumber: joi.string().min(4).max(20).trim().required(),
   password: joi.string().min(8).max(24).trim().required(),
   consent: joi.boolean().valid(true).required(),
-  profile_image: joi.string().uri({ scheme: ['https'] }).allow(null)
+  profile_image: joi
+    .string()
+    .uri({ scheme: ['https'] })
+    .allow(null)
 })
 
 export const ValidateLoginBody = joi.object<ILoginUserRequestBody, true>({

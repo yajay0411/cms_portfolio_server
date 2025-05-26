@@ -1,11 +1,6 @@
-import { TResponseGQL } from "../types/types";
+import { TResponseGQL } from '../types/types'
 
-export function formatSuccessResponse<T>(
-  data: T,
-  code = 'SUCCESS',
-  statusCode = 200,
-  metadata?: Record<string, any>
-): TResponseGQL<T> {
+export function formatSuccessResponse<T>(data: T, code = 'SUCCESS', statusCode = 200, metadata?: Record<string, any>): TResponseGQL<T> {
   return {
     success: true,
     data,
@@ -13,5 +8,5 @@ export function formatSuccessResponse<T>(
     statusCode,
     timestamp: new Date().toISOString(),
     metadata
-  };
+  }
 }

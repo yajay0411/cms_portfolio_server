@@ -13,10 +13,5 @@ type Portfolio {
 type Query {
   getPortfolio(id: ID!): Portfolio
   getPortfolioByEntityId(entity_id: ID!): Portfolio
-  getPortfolios(
-    active: Boolean
-    createdBy: ID
-    limit: Int = 10
-    offset: Int = 0
-  ): [Portfolio!]!
+  getPortfolios(active: Boolean, createdBy: ID, limit: Int = 10, offset: Int = 0): [Portfolio!]!
 }

@@ -14,49 +14,45 @@ cloudinary.config({
   api_secret: config.CLOUDINARY_API_SECRET
 })
 
-const uploadDir = './../uploads';
+const uploadDir = './../uploads'
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, { recursive: true })
 }
 
 // Multer config
 const storage = multer.diskStorage({
   destination: function (_req, _file, cb) {
-    cb(null, uploadDir);
+    cb(null, uploadDir)
   },
   filename: function (_req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    const ext = path.extname(file.originalname)
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
   }
-});
+})
 
-export const upload = multer({ 
+export const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },
   fileFilter: (_req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
     if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
+      cb(null, true)
     } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG and GIF are allowed!'));
+      cb(new Error('Invalid file type. Only JPEG, PNG and GIF are allowed!'))
     }
   }
-});
+})
 
 export const uploadToCloudinary = async (filePath: string, type: OPTIMIZE_IMAGE = 'post'): Promise<string> => {
-  try {
-    const optimizedPath = await optimizeImage(filePath, type);
-    const result = await cloudinary.uploader.upload(optimizedPath, {
-      folder: 'portfolio-images'
-    })
-    // Delete file after upload
-    fs.unlinkSync(filePath)
-    fs.unlinkSync(optimizedPath)
-    return result.secure_url
-  } catch (error) {
-    throw error
-  }
-};
+  const optimizedPath = await optimizeImage(filePath, type)
+  const result = await cloudinary.uploader.upload(optimizedPath, {
+    folder: 'portfolio-images'
+  })
+  // Delete file after upload
+  fs.unlinkSync(filePath)
+  fs.unlinkSync(optimizedPath)
+  return result.secure_url
+}

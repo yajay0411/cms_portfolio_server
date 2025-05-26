@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { ICreatePortfolioRequestBody, IPortfolio } from '../types/portfolio.types'
+import { ICreatePortfolioRequestBody, IPortfolio, IPortfolioQuery } from '../types/portfolio.types'
 import { validateJoiSchema } from '../validation/auth.validation'
 import { ValidateCreatePortfolioBody } from '../validation/portfolio.validation'
 import httpError from '../util/httpError'
@@ -21,15 +21,15 @@ interface IAuthenticatedRequest extends Request {
 export default {
   createPortfolio: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { body } = req as ICreatePortfolioRequest;
+      const { body } = req as ICreatePortfolioRequest
 
-      const request = req as IAuthenticatedRequest;
+      const request = req as IAuthenticatedRequest
 
       // If a new file was uploaded, process it
       if (req.file) {
         const imageUrl = await uploadToCloudinary(req.file.path)
         body.landing_page_photo = imageUrl
-      }  
+      }
 
       // * Body Validation
       const { error, value } = validateJoiSchema<ICreatePortfolioRequestBody>(ValidateCreatePortfolioBody, body)
@@ -76,7 +76,7 @@ export default {
       const user_id = req.query.user_id as string
 
       // Build query conditions
-      const query: any = {}
+      const query: IPortfolioQuery = {}
 
       if (searchTerm) {
         query.name = { $regex: searchTerm, $options: 'i' }
@@ -137,12 +137,12 @@ export default {
     try {
       const { id } = req.params
       const { body } = req as ICreatePortfolioRequest
-    
+
       // If a new file was uploaded, process it
       if (req.file) {
         const imageUrl = await uploadToCloudinary(req.file.path)
         body.landing_page_photo = imageUrl
-      }  
+      }
 
       // * Body Validation
       const { error, value } = validateJoiSchema<ICreatePortfolioRequestBody>(ValidateCreatePortfolioBody, body)
@@ -150,7 +150,7 @@ export default {
         return httpError(next, error, req, 422)
       }
 
-      const portfolio = await portfolioDatabase.getPortfolioDetail(id);
+      const portfolio = await portfolioDatabase.getPortfolioDetail(id)
       if (!portfolio) {
         return httpResponse(req, res, 404, responseMessage.NOT_FOUND('Portfolio'))
       }

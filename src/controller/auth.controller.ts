@@ -228,24 +228,24 @@ export default {
 
       // * Validate account status
       if (!user.accountConfirmation.status) {
-      // * Account Confirmation Object
-      const token = quicker.generateRandomId()
-      const code = quicker.generateOtp(6);
+        // * Account Confirmation Object
+        const token = quicker.generateRandomId()
+        const code = quicker.generateOtp(6)
 
-      // * Send Email
-      const confirmationUrl = `${config.CLIENT_URL}/confirmation/${token}?code=${code}`
-      const to = [emailAddress]
-      const subject = 'Confirm Your Account'
-      const html = await emailService.renderTemplate('verify_account', {
-        name: user.name,
-        confirmationUrl: confirmationUrl
-      })
-
-      emailService.sendEmail(to, subject, html).catch((err) => {
-        logger.error(`EMAIL_SERVICE`, {
-          meta: err
+        // * Send Email
+        const confirmationUrl = `${config.CLIENT_URL}/confirmation/${token}?code=${code}`
+        const to = [emailAddress]
+        const subject = 'Confirm Your Account'
+        const html = await emailService.renderTemplate('verify_account', {
+          name: user.name,
+          confirmationUrl: confirmationUrl
         })
-      })
+
+        emailService.sendEmail(to, subject, html).catch((err) => {
+          logger.error(`EMAIL_SERVICE`, {
+            meta: err
+          })
+        })
         return httpError(next, new Error(responseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
       }
 
@@ -454,7 +454,7 @@ export default {
         try {
           const decryptedJwt = quicker.verifyToken(apiOnly_RefreshToken, config.API_REFRESH_TOKEN.SECRET) as IDecryptedJwt
           userId = decryptedJwt.userId
-        } catch (err) {
+        } catch {
           userId = null
         }
 
@@ -594,7 +594,7 @@ export default {
     }
   },
 
-  // not consumed 
+  // not consumed
   changePassword: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { body, authenticatedUser } = req as IChangePasswordRequest

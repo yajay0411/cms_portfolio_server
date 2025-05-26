@@ -6,5 +6,8 @@ export const ValidateCreatePortfolioBody = joi.object<ICreatePortfolioRequestBod
   name: joi.string().min(2).max(72).trim().required(),
   summary: joi.string().min(2).max(72).trim().required(),
   active: joi.boolean(),
-  landing_page_photo: joi.string().uri({ scheme: ['https'] }).allow(null)
+  landing_page_photo: joi
+    .string()
+    .uri({ scheme: ['https'] })
+    .allow(null)
 })

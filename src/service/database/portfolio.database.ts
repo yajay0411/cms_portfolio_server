@@ -8,11 +8,11 @@ export default {
   findByEntityId: (entityId: string) => {
     return portfolioModel.findOne({ entity: entityId }).lean()
   },
-  getAllPortfolios: (query:any) => {
+  getAllPortfolios: (query: any) => {
     return portfolioModel.find(query)
   },
-  getAllPortfoliosCount: (query:any) => {
-    return portfolioModel.countDocuments(query).lean();
+  getAllPortfoliosCount: (query: any) => {
+    return portfolioModel.countDocuments(query).lean()
   },
   getPortfolioDetail: (id: string) => {
     return portfolioModel.findById(id).lean()

@@ -2,9 +2,13 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-text font-size="20px" font-weight="bold">Welcome, {{name}}!</mj-text>
+        <mj-text
+          font-size="20px"
+          font-weight="bold"
+          >Welcome, {{name}}!</mj-text
+        >
         <mj-text>
-          We’re excited to have you join us.<br/>
+          We’re excited to have you join us.<br />
           <a href="{{confirmationUrl}}">Please click to verify</a>
         </mj-text>
       </mj-column>

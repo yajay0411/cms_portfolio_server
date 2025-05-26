@@ -35,18 +35,18 @@ const consoleLogFormat = format.printf((info) => {
 
   const customMessage: string = italic(cyan(message as string))
 
-  let customMeta = '';
+  let customMeta = ''
 
   if (typeof meta === 'object' && meta !== null && 'query' in meta) {
-    customMeta = `${magenta('QUERY')} ${cyan((meta as { query: string }).query)}`;
+    customMeta = `${magenta('QUERY')} ${cyan((meta as { query: string }).query)}`
   } else {
     customMeta = util.inspect(meta, {
       showHidden: false,
       depth: null,
-      colors: true,
-    });
+      colors: true
+    })
   }
-  
+
   const customLog = `${customLevel} [${customTimestamp}] ${customMessage}\n${magenta('META')} ${customMeta}\n`
 
   return customLog
@@ -120,7 +120,7 @@ const MongodbTransport = (): Array<MongoDBTransportInstance> => {
   ]
 }
 
-let transportsArray: any[] = [...FileTransport(), ...MongodbTransport()]
+let transportsArray: (MongoDBTransportInstance | DailyRotateFile | ConsoleTransportInstance)[] = [...FileTransport(), ...MongodbTransport()]
 
 if (process.env.logger) {
   transportsArray = [...transportsArray, ...consoleTransport()]

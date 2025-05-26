@@ -42,7 +42,7 @@ export default {
         isoCode: null,
         internationalNumber: null
       }
-    } catch (err) {
+    } catch {
       return {
         countryCode: null,
         isoCode: null,
@@ -75,12 +75,8 @@ export default {
     return jwt.verify(token, secret)
   },
   getDomainFromUrl: (url: string) => {
-    try {
-      const parsedUrl = new URL(url)
-      return parsedUrl.hostname
-    } catch (err) {
-      throw err
-    }
+    const parsedUrl = new URL(url)
+    return parsedUrl.hostname
   },
   generateResetPasswordExpiry: (minute: number) => {
     return dayjs().valueOf() + minute * 60 * 1000

@@ -1,1 +1,1 @@
-export type OPTIMIZE_IMAGE = 'profile' | 'post' | 'story';
+export type OPTIMIZE_IMAGE = 'profile' | 'post' | 'story'

@@ -1,7 +1,7 @@
 import { NextFunction, Request } from 'express'
 import responseMessage from '../constant/responseMessage'
 import config from '../config/config'
-import { EApplicationEnvironment } from '../constant/application'
+import { EApplicationEnvironment, TApplicationEnvironment } from '../constant/application'
 import logger from './logger'
 import { THttpError } from '../types/types'
 
@@ -13,7 +13,7 @@ export default (nextFunc: NextFunction, err: Error | unknown, req: Request, erro
       ip: req.ip || null,
       method: req.method,
       url: req.originalUrl,
-      user:null
+      user: null
     },
     message: err instanceof Error ? err.message || responseMessage.SOMETHING_WENT_WRONG : responseMessage.SOMETHING_WENT_WRONG,
     data: null,
@@ -26,7 +26,7 @@ export default (nextFunc: NextFunction, err: Error | unknown, req: Request, erro
   })
 
   // Production Env check
-  if ((config.ENV as EApplicationEnvironment) === EApplicationEnvironment.PRODUCTION) {
+  if ((config.ENV as TApplicationEnvironment) === EApplicationEnvironment.PRODUCTION) {
     delete errorObj.request.ip
     delete errorObj.trace
   }

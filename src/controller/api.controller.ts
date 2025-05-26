@@ -11,7 +11,6 @@ import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc)
 
 export default {
-
   self: (req: Request, res: Response, next: NextFunction) => {
     try {
       httpResponse(req, res, 200, responseMessage.SUCCESS)

@@ -18,7 +18,7 @@ export const ValidateUpdateUserBody = joi.object<IUpdateUserRequestBody, true>({
         .required()
     })
     .required(),
-    profile_image: joi
+  profile_image: joi
     .string()
     .uri({ scheme: ['https'] })
     .allow(null)

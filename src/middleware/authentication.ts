@@ -37,7 +37,7 @@ export default async (request: Request, _res: Response, next: NextFunction) => {
           req.authenticatedUser = user
           return next()
         }
-      } catch (err) {
+      } catch {
         httpError(next, new Error(responseMessage.INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE), req, 401)
       }
     }

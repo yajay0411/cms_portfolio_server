@@ -1,5 +1,3 @@
-import { EUserRole } from '../constant/userConstant'
-
 export interface IUser {
   name: string
   emailAddress: string
@@ -10,7 +8,7 @@ export interface IUser {
   }
   timezone: string
   password: string
-  role: EUserRole
+  role: string
   accountConfirmation: {
     status: boolean
     token: string
@@ -39,4 +37,10 @@ export interface IUpdateUserRequestBody {
     internationalNumber: string
   }
   profile_image?: string | null
+}
+
+export interface IUserQuery {
+  name?: { $regex: string; $options: string }
+  role?: string
+  createdBy?: string
 }

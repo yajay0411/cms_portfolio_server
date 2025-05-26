@@ -9,18 +9,13 @@ sgMail.setApiKey(config.SEND_GRID_API_SECRET!)
 
 export default {
   sendEmail: async (to: string[], subject: string, html: string) => {
-    try {
-      const msg = {
-        to,
-        from: config.EMAIL_FROM!,
-        subject,
-        html
-      }
-
-      await sgMail.send(msg)
-    } catch (err) {
-      throw err
+    const msg = {
+      to,
+      from: config.EMAIL_FROM!,
+      subject,
+      html
     }
+    await sgMail.send(msg)
   },
 
   renderTemplate: async (templateName: string, data: Record<string, any>): Promise<string> => {

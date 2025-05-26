@@ -10,6 +10,8 @@
     "dev": "cross-env NODE_ENV=dev nodemon src/server.ts",
     "devlog": "cross-env NODE_ENV=dev logger=true nodemon src/server.ts",
     "start": "cross-env NODE_ENV=prod node dist/server.js",
+    "start:dev": "pm2 start ecosystem.config.js --env development",
+    "start:prod": "pm2 start ecosystem.config.js --env production",
     "lint:check": "eslint",
     "lint:fix": "eslint --fix",
     "format:check": "prettier . --check",

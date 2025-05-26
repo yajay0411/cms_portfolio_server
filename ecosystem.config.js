@@ -1,21 +1,21 @@
-export default {
+module.exports = {
   apps: [
     {
       name: 'cms-portfolio-server',
-      script: './dist/index.js',
+      script: './dist/server.js', // Compiled JS entry
       instances: 'max',
       exec_mode: 'cluster',
-      watch: false,
-      env: {
+      watch: true,
+      env_development: {
         NODE_ENV: 'development',
-        PORT: 3000,
-        DB_URI: 'mongodb://localhost:27017/cms_portfolio_dev',
+        PORT: 8080,
+        DB_URI: 'mongodb+srv://yajay04112000:S932nWEmbPg5flTr@cms-portfolio.oasqa.mongodb.net/cms-portfolio?retryWrites=true&w=majority',
         LOG_LEVEL: 'debug'
       },
       env_production: {
         NODE_ENV: 'production',
         PORT: 8080,
-        DB_URI: 'mongodb://localhost:27017/cms_portfolio_prod',
+        DB_URI: 'mongodb+srv://yajay04112000:S932nWEmbPg5flTr@cms-portfolio.oasqa.mongodb.net/cms-portfolio?retryWrites=true&w=majority',
         LOG_LEVEL: 'info'
       },
       error_file: './logs/error.log',

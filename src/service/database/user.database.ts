@@ -37,5 +37,8 @@ export default {
   },
   deleteUser: (id: string) => {
     return userModel.findByIdAndDelete(id).lean()
+  },
+  findUserByGoogleId: (google_id: string) => {
+    return userModel.findOne({ google_id })
   }
 }

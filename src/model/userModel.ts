@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema<IUser>(
       unique: true,
       required: true
     },
+    google_id: {
+      type: String,
+      unique: true,
+      default: null
+    },
     phoneNumber: {
       _id: false,
       isoCode: {

@@ -24,4 +24,6 @@ router.route('/reset-password/:token').put(rateLimit, authController.resetPasswo
 
 router.route('/change-password').put(rateLimit, authentication, authController.changePassword)
 
+router.post('/google', authController.googleIdTokenAuth)
+
 export default router

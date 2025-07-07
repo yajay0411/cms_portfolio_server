@@ -1,6 +1,7 @@
 export interface IUser {
   name: string
   emailAddress: string
+  google_id?: string
   phoneNumber: {
     isoCode: string
     countryCode: string

@@ -21,8 +21,6 @@ export default async (request: Request, _res: Response, next: NextFunction) => {
       apiOnly_AccessToken: string | undefined
     }
 
-    console.log(`apiOnly_AccessToken: ${apiOnly_AccessToken}`)
-
     if (apiOnly_AccessToken) {
       // Verify Token
       try {

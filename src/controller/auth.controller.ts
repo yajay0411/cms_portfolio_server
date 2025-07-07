@@ -30,6 +30,7 @@ import { EApplicationEnvironment, EStorageKey } from '../constant/application'
 import authDatabase from '../service/database/auth.database'
 import userDatabase from '../service/database/user.database'
 import { uploadToCloudinary } from '../util/fileUpload'
+import { OAuth2Client } from 'google-auth-library'
 
 interface IRegisterRequest extends Request {
   body: IRegisterUserRequestBody
@@ -67,6 +68,8 @@ interface IChangePasswordRequest extends Request {
   authenticatedUser: IUserWithId
   body: IChangePasswordRequestBody
 }
+
+const googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID)
 
 export default {
   register: async (req: Request, res: Response, next: NextFunction) => {
@@ -641,6 +644,137 @@ export default {
       // })
 
       httpResponse(req, res, 200, responseMessage.SUCCESS)
+    } catch (err) {
+      httpError(next, err, req, 500)
+    }
+  },
+
+  /**
+   * Google ID Token authentication (GIS flow)
+   */
+  googleIdTokenAuth: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { credential } = req.body
+      if (!credential) {
+        return httpError(next, new Error('No ID token provided'), req, 400)
+      }
+      // Verify Google ID token
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential.credential,
+        audience: config.GOOGLE_CLIENT_ID
+      })
+      const payload = ticket.getPayload()
+      if (!payload || !payload.sub) {
+        return httpError(next, new Error('Invalid Google token'), req, 401)
+      }
+      // Find or create user
+      let user = await userDatabase.findUserByGoogleId(payload.sub)
+
+      if (!user) {
+        // Extract user info from Google payload
+        const email = payload.email
+        const name = payload.name || 'Google user'
+        const profile_image = payload.picture || null
+        const password = quicker.generateRandomId()
+        const timezone = 'UTC'
+        const phoneNumber = {
+          isoCode: 'US',
+          countryCode: '+1',
+          internationalNumber: '+10000000000'
+        }
+        const accountConfirmation = {
+          status: true,
+          token: quicker.generateRandomId(),
+          code: quicker.generateOtp(6),
+          timestamp: new Date()
+        }
+        user = await userDatabase.registerUser({
+          name,
+          emailAddress: email as string,
+          profile_image,
+          accountConfirmation,
+          password,
+          timezone,
+          phoneNumber,
+          consent: true,
+          role: EUserRole.USER,
+          lastLoginAt: new Date(),
+          passwordReset: {
+            token: null,
+            expiry: null,
+            lastResetAt: null
+          },
+          google_id: payload.sub
+        })
+      }
+
+      // * Access Token & Refresh Token
+      const client_AccessToken = quicker.generateToken(
+        {
+          userId: user.id
+        },
+        config.CLIENT_ACCESS_TOKEN.SECRET,
+        config.CLIENT_ACCESS_TOKEN.EXPIRY
+      )
+
+      const api_AccessToken = quicker.generateToken(
+        {
+          userId: user.id
+        },
+        config.API_ACCESS_TOKEN.SECRET,
+        config.API_ACCESS_TOKEN.EXPIRY
+      )
+
+      const api_RefreshToken = quicker.generateToken(
+        {
+          userId: user.id
+        },
+        config.API_REFRESH_TOKEN.SECRET,
+        config.API_REFRESH_TOKEN.EXPIRY
+      )
+
+      // * Last Login Information
+      user.lastLoginAt = dayjs().utc().toDate()
+      await user.save()
+
+      // * Refresh Token Store
+      const refreshTokenPayload: IRefreshToken = {
+        token: api_RefreshToken
+      }
+
+      await authDatabase.createRefreshToken(refreshTokenPayload)
+
+      // * Cookie Send
+      const DOMAIN = quicker.getDomainFromUrl(config.SERVER_URL)
+
+      res
+        .cookie(EStorageKey.CLIENT_ACCESS_TOKEN, client_AccessToken, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.CLIENT_ACCESS_TOKEN.EXPIRY,
+          httpOnly: false,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
+        .cookie(EStorageKey.API_ACCESS_TOKEN, api_AccessToken, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.API_ACCESS_TOKEN.EXPIRY,
+          httpOnly: true,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
+        .cookie(EStorageKey.API_REFRESH_TOKEN, api_RefreshToken, {
+          path: '/',
+          domain: DOMAIN,
+          sameSite: 'strict',
+          maxAge: 1000 * config.API_REFRESH_TOKEN.EXPIRY,
+          httpOnly: true,
+          secure: !(config.ENV === EApplicationEnvironment.DEVELOPMENT)
+        })
+
+      // Send Response
+      httpResponse(req, res, 200, responseMessage.SUCCESS, { user: user })
     } catch (err) {
       httpError(next, err, req, 500)
     }

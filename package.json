@@ -17,7 +17,9 @@
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier . --check",
     "format:fix": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "clean": "rm -rf dist logs",
+    "clean:all": "rm -rf dist logs node_modules"
   },
   "lint-staged": {
     "*.ts": [

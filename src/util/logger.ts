@@ -1,136 +1,109 @@
-import util from 'util'
-import 'winston-mongodb'
-import { createLogger, format, transports } from 'winston'
-import { ConsoleTransportInstance } from 'winston/lib/winston/transports'
-import DailyRotateFile from 'winston-daily-rotate-file'
-import config from '../config/config'
-import { EApplicationEnvironment } from '../constant/application'
-import path from 'path'
-import { red, blue, yellow, green, magenta, italic, cyan } from 'colorette'
-import * as sourceMapSupport from 'source-map-support'
-import { MongoDBTransportInstance } from 'winston-mongodb'
+import util from 'node:util';
+import 'winston-mongodb';
+import { createLogger, format, transports } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import path from 'path';
+import { red, blue, yellow, green, magenta, italic, cyan } from 'colorette';
+import * as sourceMapSupport from 'source-map-support';
+import config from '../config/config';
+import { ConsoleTransportInstance } from 'winston/lib/winston/transports';
+import { MongoDBTransportInstance } from 'winston-mongodb';
 
-// Linking Trace Support
-sourceMapSupport.install()
+sourceMapSupport.install();
 
-const colorizeLevel = (level: string) => {
-  switch (level) {
+// ───────────────────────────────
+// 🧩 Environment switch
+// ───────────────────────────────
+const isLoggingEnabled = process.env.LOGGER === 'true';
+
+// ───────────────────────────────
+// 🎨 Helpers for color and format
+// ───────────────────────────────
+const colorizeLevel = (level: string): string => {
+  switch (level.toUpperCase()) {
     case 'ERROR':
-      return red(level)
+      return red(level);
     case 'INFO':
-      return blue(level)
+      return blue(level);
     case 'WARN':
-      return yellow(level)
+      return yellow(level);
     default:
-      return level
+      return level;
   }
-}
+};
 
 const consoleLogFormat = format.printf((info) => {
-  const { level, message, timestamp, meta = {} } = info
+  const { level, message, timestamp, meta = {} } = info;
+  return `[${colorizeLevel(level)}] [${green(timestamp as string)}] ${italic(
+    cyan(message as string)
+  )}\n${magenta('META')} ${util.inspect(meta, { colors: true })}\n`;
+});
 
-  const customLevel = colorizeLevel(level.toUpperCase())
+// ───────────────────────────────
+// 🚀 Transport builders
+// ───────────────────────────────
+const consoleTransport = (): ConsoleTransportInstance[] => [
+  new transports.Console({
+    level: 'debug',
+    format: format.combine(format.timestamp(), consoleLogFormat)
+  })
+];
 
-  const customTimestamp = green(timestamp as string)
+const fileTransport = (): DailyRotateFile[] => [
+  new DailyRotateFile({
+    filename: path.join(__dirname, '../../logs', `${config.ENV}-%DATE%.log`),
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '10m',
+    maxFiles: '30d',
+    level: 'info',
+    format: format.combine(format.timestamp(), format.json())
+  })
+];
 
-  const customMessage: string = italic(cyan(message as string))
-
-  let customMeta = ''
-
-  if (typeof meta === 'object' && meta !== null && 'query' in meta) {
-    customMeta = `${magenta('QUERY')} ${cyan((meta as { query: string }).query)}`
-  } else {
-    customMeta = util.inspect(meta, {
-      showHidden: false,
-      depth: null,
-      colors: true
-    })
-  }
-
-  const customLog = `${customLevel} [${customTimestamp}] ${customMessage}\n${magenta('META')} ${customMeta}\n`
-
-  return customLog
-})
-
-const consoleTransport = (): Array<ConsoleTransportInstance> => {
-  if (config.ENV === EApplicationEnvironment.DEVELOPMENT) {
-    return [
-      new transports.Console({
-        level: 'info',
-        format: format.combine(format.timestamp(), consoleLogFormat)
-      })
-    ]
-  }
-
-  return []
-}
-
-const fileLogFormat = format.printf((info) => {
-  const { level, message, timestamp, meta = {} } = info
-
-  const logMeta: Record<string, unknown> = {}
-
-  for (const [key, value] of Object.entries(meta as object)) {
-    if (value instanceof Error) {
-      logMeta[key] = {
-        name: value.name,
-        message: value.message,
-        trace: value.stack || ''
-      }
-    } else {
-      logMeta[key] = value
-    }
-  }
-
-  const logData = {
-    level: level.toUpperCase(),
-    message,
-    timestamp,
-    meta: logMeta
-  }
-
-  return JSON.stringify(logData, null, 4)
-})
-
-const FileTransport = () => {
-  return [
-    new DailyRotateFile({
-      filename: path.join(__dirname, '../../logs', `${config.ENV}(%DATE%).log`), // Logs will be stored as ENV-YYYY-MM-DD.log
-      datePattern: 'YYYY-MM-DD', // New log file created daily
-      maxSize: '10m', // Rotate file if it exceeds 10MB
-      maxFiles: '30d', // Keep logs for 30 days
-      level: 'info',
-      format: format.combine(format.timestamp(), fileLogFormat)
-    })
-  ]
-}
-
-const MongodbTransport = (): Array<MongoDBTransportInstance> => {
+const mongodbTransport = (): MongoDBTransportInstance[] => {
   return [
     new transports.MongoDB({
       level: 'info',
-      db: config.DATABASE_URL,
+      db: config.MONGODB_URI,
       metaKey: 'meta',
-      expireAfterSeconds: 3600 * 24 * 30,
+      collection: 'application-logs',
+      tryReconnect: true,
       options: {
-        useUnifiedTopology: true
-      },
-      collection: 'application-logs'
+        retryWrites: true,
+        writeConcern: { w: 'majority' }
+      }
     })
-  ]
-}
+  ];
+};
 
-let transportsArray: (MongoDBTransportInstance | DailyRotateFile | ConsoleTransportInstance)[] = [...FileTransport(), ...MongodbTransport()]
+// ───────────────────────────────
+// 🧱 Logger instance (conditionally built)
+// ───────────────────────────────
+const logger = isLoggingEnabled
+  ? createLogger({
+      defaultMeta: { meta: {} },
+      transports: [...fileTransport(), ...mongodbTransport(), ...consoleTransport()],
+      exceptionHandlers: [
+        new DailyRotateFile({
+          filename: path.join(__dirname, '../../logs/exceptions-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          maxFiles: '15d'
+        })
+      ],
+      rejectionHandlers: [
+        new DailyRotateFile({
+          filename: path.join(__dirname, '../../logs/rejections-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          maxFiles: '15d'
+        })
+      ]
+    })
+  : // 🧱 Dummy logger (no-logs)
+    ({
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      debug: () => {}
+    } as unknown as ReturnType<typeof createLogger>);
 
-if (process.env.logger) {
-  transportsArray = [...transportsArray, ...consoleTransport()]
-}
-
-const transport = transportsArray
-
-export default createLogger({
-  defaultMeta: {
-    meta: {}
-  },
-  transports: transport
-})
+export default logger;

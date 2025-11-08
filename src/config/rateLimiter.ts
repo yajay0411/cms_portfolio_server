@@ -1,23 +1,25 @@
-import { Connection } from 'mongoose'
-import { RateLimiterMongo } from 'rate-limiter-flexible'
-import logger from '../util/logger'
+import { Connection } from 'mongoose';
+import { RateLimiterMongo } from 'rate-limiter-flexible';
+import logger from '../util/logger';
+import config from './config';
+import { EApplicationEnvironment, TApplicationEnvironment } from '@/constant/application';
 
-export let rateLimiterMongo: RateLimiterMongo | null = null
+export let rateLimiterMongo: RateLimiterMongo | null = null;
 
-const DURATION = 60
-const POINTS = 10
+const DURATION = 60;
+const POINTS = (config.ENV as TApplicationEnvironment) === EApplicationEnvironment.DEVELOPMENT ? 20 : 10;
 
-export const initRateLimiter = (mongooseConnection: Connection) => {
+export const initRateLimiter = (mongooseConnection: Connection): void => {
   try {
     rateLimiterMongo = new RateLimiterMongo({
       storeClient: mongooseConnection,
       points: POINTS,
       duration: DURATION
-    })
+    });
 
-    logger.info(`RATE_LIMITER_INITIATED_SUCCESSFULLY`)
+    logger.info(`RATE_LIMITER_INITIATED_SUCCESSFULLY`);
   } catch (error) {
-    logger.info(`RATE_LIMITER_INITIATED_FAILED`, error)
-    rateLimiterMongo = null
+    logger.info(`RATE_LIMITER_INITIATED_FAILED`, error);
+    rateLimiterMongo = null;
   }
-}
+};

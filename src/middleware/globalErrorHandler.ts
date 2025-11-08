@@ -1,6 +1,9 @@
-import { Request, Response } from 'express'
-import { THttpError } from '../types/types'
+import { THttpError } from '@/types/types';
+import { Request, Response, NextFunction } from 'express';
 
-export default (err: THttpError, _req: Request, res: Response) => {
-  res.status(err.statusCode).json(err)
-}
+export default (err: THttpError, _req: Request, res: Response, _next: NextFunction): Response => {
+  void _next;
+  void _req;
+  const statusCode = err.statusCode || 500;
+  return res.status(statusCode).json(err);
+};

@@ -1,19 +1,15 @@
-import express, { Application, NextFunction, Request, Response } from 'express'
-import path from 'path'
-import router from './router/api.routes'
-import globalErrorHandler from './middleware/globalErrorHandler'
-import responseMessage from './constant/responseMessage'
-import httpError from './util/httpError'
-import helmet from 'helmet'
-import cors from 'cors'
-import cookieParser from 'cookie-parser'
-import config from './config/config'
-import { graphqlHTTP } from 'express-graphql'
-import { loadFilesSync } from '@graphql-tools/load-files'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { formatErrorResponse } from './util/ErrorGQL'
+import express, { Application, NextFunction, Request, Response } from 'express';
+import path from 'path';
+import router from './router/api.routes';
+import globalErrorHandler from './middleware/globalErrorHandler';
+import responseMessage from './constant/responseMessage';
+import httpError from './util/httpError';
+import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import config from './config/config';
 
-const app: Application = express()
+const app: Application = express();
 
 app.use(
   helmet({
@@ -26,59 +22,36 @@ app.use(
     },
     crossOriginEmbedderPolicy: false
   })
-)
-app.use(cookieParser())
+);
+app.use(cookieParser());
 app.use(
   cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
     origin: [config.CLIENT_URL],
     credentials: true
   })
-)
-app.use(express.json())
-app.use(express.static(path.join(__dirname, '../', 'public')))
-
-// Load GraphQL schema and resolvers
-const typeDefs = loadFilesSync(path.join(__dirname, './graphql/schemes/**/*.graphql'))
-const resolvers = loadFilesSync(path.join(__dirname, './graphql/resolvers/**/*.resolvers.ts'))
-
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers
-})
-
-// GraphQL Middleware
-app.use(
-  '/api/v1/graphql',
-  graphqlHTTP({
-    schema,
-    graphiql: config.ENV === 'development',
-    customFormatErrorFn: (error) => formatErrorResponse(error, config.ENV === 'development'),
-    extensions: ({ result }) => {
-      if (result?.data) {
-        return {
-          success: true,
-          timestamp: new Date().toISOString()
-        }
-      }
-      return {}
-    }
-  })
-)
+);
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../', 'public')));
 
 // REST Routes
-app.use('/api/v1', router)
+app.use('/api/v1', router);
+
+// Home Route
+app.get('/', (_req: Request, res: Response) => {
+  res.send(`SERVER IS RUNNING: ${config.SERVER_URL}`);
+});
 
 // 404 Handler
 app.use((req: Request, _: Response, next: NextFunction) => {
   try {
-    throw new Error(responseMessage.NOT_FOUND('route'))
+    throw new Error(responseMessage.NOT_FOUND('route'));
   } catch (err) {
-    httpError(next, err, req, 404)
+    httpError(next, err, req, 404);
   }
-})
+});
 
 // Global Error Handler
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
-export default app
+export default app;

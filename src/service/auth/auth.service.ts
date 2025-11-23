@@ -135,10 +135,10 @@ export class AuthService {
 
   logout(accessToken: string, refreshToken: string): void {
     try {
-      this.tokenFactory.blacklistToken(accessToken);
-      this.tokenFactory.blacklistToken(refreshToken);
-    } catch {
-      throw new Error('INVALID_REFRESH');
+      this.tokenFactory.blacklistToken(accessToken, 'ACCESS');
+      this.tokenFactory.blacklistToken(refreshToken, 'REFRESH');
+    } catch (error) {
+      throw new Error((error as Error)?.message);
     }
   }
 }

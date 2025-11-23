@@ -1,6 +1,6 @@
 import { NextFunction, Request } from 'express';
 import responseMessage from '../constant/responseMessage';
-import config from '../config/config';
+import config from '../config/app.config';
 import { EApplicationEnvironment, TApplicationEnvironment } from '../constant/application';
 import logger from './logger';
 import { THttpError } from '../types/response.type';

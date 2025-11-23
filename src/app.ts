@@ -6,7 +6,7 @@ import httpError from './util/httpError';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import config from './config/config';
+import config from './config/app.config';
 
 const app: Application = express();
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { THttpResponse } from '../types/response.type';
-import config from '../config/config';
+import config from '../config/app.config';
 import { EApplicationEnvironment, TApplicationEnvironment } from '../constant/application';
 import logger from './logger';
 

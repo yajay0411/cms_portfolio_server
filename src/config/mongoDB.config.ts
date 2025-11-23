@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import config from './config';
+import config from './app.config';
 import logger from '../util/logger';
 
 // Enable debug mode for mongoose in development
@@ -33,7 +33,7 @@ export default {
 
       await mongoose.connect(config.MONGODB_URI, options);
 
-      logger.info('✅ MongoDB connected successfully', {
+      logger.info('✅ MONGODB_CONNECTED_SUCCESSFULLY', {
         meta: {
           host: mongoose.connection.host,
           name: mongoose.connection.name,
@@ -43,16 +43,18 @@ export default {
       });
 
       mongoose.connection.on('disconnected', () => {
-        logger.warn('⚠️ MongoDB disconnected');
+        logger.warn('⚠️ MONGODB_DISCONNECTED');
+        process.exit(1);
       });
 
       mongoose.connection.on('error', (err) => {
-        logger.error('❌ MongoDB connection error', { meta: err });
+        logger.error('❌ MONGODB_CONNECTION_ERROR', { meta: err });
+        process.exit(1);
       });
 
       return mongoose.connection;
     } catch (err) {
-      logger.error('❌ MongoDB connection failed', { meta: err });
+      logger.error('❌ MONGODB_CONNECTION_ERROR', { meta: err });
       process.exit(1);
     }
   }

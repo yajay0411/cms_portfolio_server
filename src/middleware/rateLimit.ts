@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { rateLimiterMongo } from '../config/rateLimiter';
+import { rateLimiterMongo } from '../config/rateLimit.config';
 import httpError from '../util/httpError';
 import responseMessage from '../constant/responseMessage';
 

@@ -1,19 +1,17 @@
 import app from './app';
-import config from './config/config';
-import { initRateLimiter } from './config/rateLimiter';
-import coreDatabase from './config/connnectMongoDB';
+import config from './config/app.config';
+import { initRateLimiter } from './config/rateLimit.config';
+import coreDatabase from './config/mongoDB.config';
 import logger from './util/logger';
+import { initRedis } from './config/redis.config';
 
 const server = app.listen(config.PORT);
 (async (): Promise<void> => {
   try {
     // Database Connection
     const connection = await coreDatabase.connect();
-    logger.info(`DATABASE_CONNECTED_SUCCESSFULLY`, {
-      meta: {
-        CONNECTION_NAME: connection.name
-      }
-    });
+
+    initRedis();
 
     initRateLimiter(connection);
 

@@ -1,4 +1,4 @@
-import config from '@/config/config';
+import config from '@/config/app.config';
 
 export interface GoogleProfile {
   email?: string | null;

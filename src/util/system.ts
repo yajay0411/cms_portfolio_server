@@ -1,5 +1,5 @@
 import os from 'os';
-import config from '../config/config';
+import config from '../config/app.config';
 
 interface SystemHealth {
   cpuUsage: number[];

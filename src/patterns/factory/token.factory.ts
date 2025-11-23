@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
-import config from '@/config/config';
+import config from '@/config/app.config';
 import { JwtClaims, TokenPair } from '@/types/auth.type';
+import { blacklistService } from '@/service/redis/tokenBlacklist.service';
 
 export class TokenFactory {
   private blacklist: Set<string> = new Set();
@@ -38,8 +39,11 @@ export class TokenFactory {
     return decoded;
   }
 
-  blacklistToken(token: string): void {
-    console.log(this.blacklist);
-    this.blacklist.add(token);
+  blacklistToken(token: string, type: 'ACCESS' | 'REFRESH'): void {
+    if (type === 'ACCESS') {
+      blacklistService.blacklistAccessToken(token, 1 * 24 * 60 * 60);
+    } else {
+      blacklistService.blacklistRefreshToken(token, 1 * 24 * 60 * 60);
+    }
   }
 }

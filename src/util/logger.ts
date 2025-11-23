@@ -5,7 +5,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import { red, blue, yellow, green, magenta, italic, cyan } from 'colorette';
 import * as sourceMapSupport from 'source-map-support';
-import config from '../config/config';
+import config from '../config/app.config';
 import { ConsoleTransportInstance } from 'winston/lib/winston/transports';
 import { MongoDBTransportInstance } from 'winston-mongodb';
 

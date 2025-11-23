@@ -30,7 +30,10 @@ const envVarsSchema = Joi.object({
 
   // Google OAuth
   GOOGLE_CLIENT_ID: Joi.string().required().description('Google OAuth client id is required'),
-  GOOGLE_CLIENT_SECRET: Joi.string().required().description('Google OAuth client secret is required')
+  GOOGLE_CLIENT_SECRET: Joi.string().required().description('Google OAuth client secret is required'),
+
+  // Redis
+  REDIS_URL: Joi.string().required()
 }).unknown(true);
 
 // Validate environment variables
@@ -65,6 +68,7 @@ interface Config {
   REFRESH_TOKEN_TTL: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  REDIS_URL: string;
 }
 
 // Create the config object with type safety
@@ -94,7 +98,10 @@ const config: Config = Object.freeze({
 
   // Google OAuth
   GOOGLE_CLIENT_ID: envVars.GOOGLE_CLIENT_ID as string,
-  GOOGLE_CLIENT_SECRET: envVars.GOOGLE_CLIENT_SECRET as string
+  GOOGLE_CLIENT_SECRET: envVars.GOOGLE_CLIENT_SECRET as string,
+
+  // Redis
+  REDIS_URL: envVars.REDIS_URL as string
 });
 
 // Log config in development

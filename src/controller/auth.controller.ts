@@ -3,7 +3,7 @@ import httpError from '@/util/httpError';
 import httpResponse from '@/util/httpResponse';
 import { NextFunction, Request, Response } from 'express';
 import { authFacade } from '@/patterns/di';
-import config from '@/config/config';
+import config from '@/config/app.config';
 
 export default {
   register: async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -11,9 +11,6 @@ export const initRedis = async (): Promise<void> => {
 };
 
 redis.on('connect', async () => {
-  // Set a key-value pair in Redis
-  await redis.set('SERVER_URL', config.SERVER_URL);
-  // Get the value of the key from Redis
   const demoValue = await redis.ping();
   logger.info('REDIS_CONNECTED_SUCCESSFULLY', {
     meta: {

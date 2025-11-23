@@ -48,17 +48,17 @@ export class OtpLoginStrategy implements AuthBaseStrategy {
       if (otpRecord.expiresAt.getTime() < Date.now()) {
         throw new Error(responseMessage.OTP_EXPIRED);
       }
-      await this.otps.markConsumed(otpRecord._id as string);
+      await this.otps.markConsumed(otpRecord._id.toString());
     }
 
     // Update provider if not set
     const providerKey = 'OTP';
     if (!user.providers?.[providerKey]) {
       user.providers = { ...user.providers, [providerKey]: true };
-      await this.users.updateById(user._id as string, { providers: user.providers });
+      await this.users.updateById(user._id.toString(), { providers: user.providers });
     }
 
-    await this.users.setLoginMeta(user._id as string);
+    await this.users.setLoginMeta(user._id.toString());
 
     return { user };
   }

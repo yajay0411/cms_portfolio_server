@@ -22,7 +22,7 @@ export class EmailPasswordStrategy implements AuthBaseStrategy {
     const ok = await verifyPassword(payload.password, user.passwordHash);
     if (!ok) throw new Error(responseMessage.INVALID_EMAIL_OR_PASSWORD);
 
-    await this.users.setLoginMeta(user._id as string);
+    await this.users.setLoginMeta(user._id.toString());
     return { user };
   }
 }

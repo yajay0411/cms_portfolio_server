@@ -10,7 +10,7 @@
     "dev:log": "LOGGER=true dotenvx run --env-file .env.development -- nodemon",
     "dev:debug": "LOGGER=true NODE_OPTIONS='--inspect --trace-warnings' DEBUG=express:*,mongoose:* dotenvx run --env-file .env.development -- nodemon",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
-    "preview": "pnpm run build && dotenvx run --env-file .env.production -- node dist/server.js",
+    "preview": "pnpm run build && LOGGER=true dotenvx run --env-file .env.production -- node dist/server.js",
     "start:dev": "pm2 start ecosystem.config.js --env development",
     "start:prod": "pm2 start ecosystem.config.js --env production",
     "lint": "eslint \"src/**/*.ts\"",

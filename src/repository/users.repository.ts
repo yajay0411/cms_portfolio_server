@@ -1,5 +1,5 @@
 import { IUser, UserModel } from '@/model/user.model';
-import { FilterQuery, UpdateQuery } from 'mongoose';
+import { UpdateQuery, QueryFilter } from 'mongoose';
 
 export class UserRepository {
   async create(data: Partial<IUser>): Promise<IUser> {
@@ -11,7 +11,7 @@ export class UserRepository {
     return UserModel.findById(id).lean<IUser>().exec();
   }
 
-  async findOne(filter: FilterQuery<IUser>): Promise<IUser | null> {
+  async findOne(filter: QueryFilter<IUser>): Promise<IUser | null> {
     return UserModel.findOne(filter).lean<IUser>().exec();
   }
 

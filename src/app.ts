@@ -1,5 +1,4 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
-import path from 'path';
 import router from './router/api.routes';
 import globalErrorHandler from './middleware/globalErrorHandler';
 import responseMessage from './constant/responseMessage';
@@ -24,15 +23,17 @@ app.use(
   })
 );
 app.use(cookieParser());
+
+const devDomain = ['http://localhost:4173', 'http://localhost:5173'];
 app.use(
   cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-    origin: [config.CLIENT_URL],
+    origin: [config.CLIENT_URL, ...devDomain],
     credentials: true
   })
 );
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../', 'public')));
+app.use(express.urlencoded({ extended: true }));
 
 // REST Routes
 app.use('/api/v1', router);

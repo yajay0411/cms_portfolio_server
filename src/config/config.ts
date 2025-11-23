@@ -21,8 +21,16 @@ const envVarsSchema = Joi.object({
   EMAIL_FROM: Joi.string().email().default('noreply@example.com'),
 
   // Tokens
-  API_ACCESS_TOKEN_SECRET: Joi.string().min(32).required().description('API access token secret is required (min 32 chars)'),
-  API_REFRESH_TOKEN_SECRET: Joi.string().min(32).required().description('API refresh token secret is required (min 32 chars)')
+  ACCESS_TOKEN_SECRET: Joi.string().min(32).required().description('API access token secret is required (min 32 chars)'),
+  REFRESH_TOKEN_SECRET: Joi.string().min(32).required().description('API refresh token secret is required (min 32 chars)'),
+
+  // Tokens TTL
+  ACCESS_TOKEN_TTL: Joi.string().default('15m'),
+  REFRESH_TOKEN_TTL: Joi.string().default('20m'),
+
+  // Google OAuth
+  GOOGLE_CLIENT_ID: Joi.string().required().description('Google OAuth client id is required'),
+  GOOGLE_CLIENT_SECRET: Joi.string().required().description('Google OAuth client secret is required')
 }).unknown(true);
 
 // Validate environment variables
@@ -51,8 +59,12 @@ interface Config {
   MONGODB_URI: string;
   SEND_GRID_API_SECRET: string;
   EMAIL_FROM: string;
-  API_ACCESS_TOKEN_SECRET: string;
-  API_REFRESH_TOKEN_SECRET: string;
+  ACCESS_TOKEN_SECRET: string;
+  REFRESH_TOKEN_SECRET: string;
+  ACCESS_TOKEN_TTL: string;
+  REFRESH_TOKEN_TTL: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
 }
 
 // Create the config object with type safety
@@ -73,8 +85,16 @@ const config: Config = Object.freeze({
   MONGODB_URI: envVars.MONGODB_URI as string,
 
   // Tokens
-  API_ACCESS_TOKEN_SECRET: envVars.API_ACCESS_TOKEN_SECRET as string,
-  API_REFRESH_TOKEN_SECRET: envVars.API_REFRESH_TOKEN_SECRET as string
+  ACCESS_TOKEN_SECRET: envVars.ACCESS_TOKEN_SECRET as string,
+  REFRESH_TOKEN_SECRET: envVars.REFRESH_TOKEN_SECRET as string,
+
+  // Tokens TTL
+  ACCESS_TOKEN_TTL: envVars.ACCESS_TOKEN_TTL as string,
+  REFRESH_TOKEN_TTL: envVars.REFRESH_TOKEN_TTL as string,
+
+  // Google OAuth
+  GOOGLE_CLIENT_ID: envVars.GOOGLE_CLIENT_ID as string,
+  GOOGLE_CLIENT_SECRET: envVars.GOOGLE_CLIENT_SECRET as string
 });
 
 // Log config in development

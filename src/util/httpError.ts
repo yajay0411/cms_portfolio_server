@@ -3,7 +3,7 @@ import responseMessage from '../constant/responseMessage';
 import config from '../config/config';
 import { EApplicationEnvironment, TApplicationEnvironment } from '../constant/application';
 import logger from './logger';
-import { THttpError } from '../types/types';
+import { THttpError } from '../types/response.type';
 
 export default (nextFunc: NextFunction, err: Error | unknown, req: Request, errorStatusCode: number = 500): void => {
   const errorObj: THttpError = {

@@ -1,7 +1,7 @@
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "eslint.validate": ["typescript"],
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
   "prettier.semi": true,
   "prettier.singleQuote": true,
   "prettier.printWidth": 150,

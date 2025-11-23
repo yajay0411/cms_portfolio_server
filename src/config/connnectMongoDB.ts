@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import config from '../../config/config';
-import logger from '../../util/logger';
+import config from './config';
+import logger from '../util/logger';
 
 // Enable debug mode for mongoose in development
 if (process.env.DEBUG?.includes('mongoose')) {

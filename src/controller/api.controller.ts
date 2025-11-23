@@ -2,9 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import responseMessage from '../constant/responseMessage';
 import httpError from '../util/httpError';
-import quicker from '../util/quicker';
-// import emailService from '../service/emailService'
-// import logger from '../util/logger'
+import system from '../util/system';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -22,8 +20,8 @@ export default {
   health: (req: Request, res: Response, next: NextFunction): void => {
     try {
       const healthData = {
-        application: quicker.getApplicationHealth(),
-        system: quicker.getSystemHealth(),
+        application: system.getApplicationHealth(),
+        system: system.getSystemHealth(),
         timestamp: Date.now()
       };
 

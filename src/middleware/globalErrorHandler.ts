@@ -1,4 +1,4 @@
-import { THttpError } from '@/types/types';
+import { THttpError } from '@/types/response.type';
 import { Request, Response, NextFunction } from 'express';
 
 export default (err: THttpError, _req: Request, res: Response, _next: NextFunction): Response => {

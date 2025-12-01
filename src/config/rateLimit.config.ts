@@ -1,4 +1,4 @@
-import { RateLimiterRedis } from 'rate-limiter-flexible';
+import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import logger from '../util/logger';
 import config from './app.config';
 import redis from './redis.config';
@@ -11,10 +11,16 @@ const POINTS = (config.ENV as TApplicationEnvironment) === EApplicationEnvironme
 
 export const initRateLimiter = async (): Promise<void> => {
   try {
-    rateLimiter = new RateLimiterRedis({
-      storeClient: redis,
+    const insuranceLimiter = new RateLimiterMemory({
       points: POINTS,
       duration: DURATION
+    });
+    rateLimiter = new RateLimiterRedis({
+      storeClient: redis,
+      keyPrefix: 'rl',
+      points: POINTS,
+      duration: DURATION,
+      insuranceLimiter
     });
 
     logger.info(`RATE_LIMITER_INITIATED_SUCCESSFULLY`, {

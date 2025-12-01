@@ -8,5 +8,9 @@
  * 🟢 You can import this file directly.
  */
 
-// This file is empty because there are no enums in the schema.
-export {};
+export const ContactType = {
+  email: 'email',
+  mobile: 'mobile'
+} as const;
+
+export type ContactType = (typeof ContactType)[keyof typeof ContactType];

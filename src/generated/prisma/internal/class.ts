@@ -19,7 +19,7 @@ const config: runtime.GetPrismaClientConfig = {
   engineVersion: 'f09f2815f091dbba658cdcd2264306d88bb5bda6',
   activeProvider: 'postgresql',
   inlineSchema:
-    '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "./generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id    Int     @id @default(autoincrement())\n  email String  @unique\n  name  String?\n}\n',
+    '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id           String    @id @default(uuid())\n  email        String?   @unique\n  mobile       String?   @unique\n  name         String?\n  passwordHash String?\n  providers    Json?\n  lastLoginAt  DateTime?\n  createdAt    DateTime  @default(now())\n  updatedAt    DateTime  @updatedAt\n}\n\nenum ContactType {\n  email\n  mobile\n}\n\nmodel Otp {\n  id         String      @id @default(uuid())\n  email      String?\n  mobile     String?\n  code       String\n  type       ContactType\n  expiresAt  DateTime\n  consumedAt DateTime?\n  createdAt  DateTime    @default(now())\n  updatedAt  DateTime    @updatedAt\n\n  @@index([email, code])\n  @@index([mobile, code])\n}\n',
   runtimeDataModel: {
     models: {},
     enums: {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
 };
 
 config.runtimeDataModel = JSON.parse(
-  '{"models":{"User":{"fields":[{"name":"id","kind":"scalar","type":"Int"},{"name":"email","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"}],"dbName":null}},"enums":{},"types":{}}'
+  '{"models":{"User":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"mobile","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"passwordHash","kind":"scalar","type":"String"},{"name":"providers","kind":"scalar","type":"Json"},{"name":"lastLoginAt","kind":"scalar","type":"DateTime"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Otp":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"mobile","kind":"scalar","type":"String"},{"name":"code","kind":"scalar","type":"String"},{"name":"type","kind":"enum","type":"ContactType"},{"name":"expiresAt","kind":"scalar","type":"DateTime"},{"name":"consumedAt","kind":"scalar","type":"DateTime"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null}},"enums":{},"types":{}}'
 );
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
@@ -200,6 +200,16 @@ export interface PrismaClient<
    * ```
    */
   get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.otp`: Exposes CRUD operations for the **Otp** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Otps
+   * const otps = await prisma.otp.findMany()
+   * ```
+   */
+  get otp(): Prisma.OtpDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

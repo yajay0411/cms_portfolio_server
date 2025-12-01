@@ -8,12 +8,19 @@ export default (req: Request, _: Response, next: NextFunction): void => {
     return next();
   }
 
+  const key = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() || (req.ip as string) || 'unknown';
+
   rateLimiter
-    .consume(req.ip as string, 1)
+    .consume(key, 1)
     .then(() => {
       next();
     })
-    .catch(() => {
-      httpError(next, new Error(responseMessage.TOO_MANY_REQUESTS), req, 429);
+    .catch((err: unknown) => {
+      const isRateLimited = !!(err && typeof err === 'object' && 'msBeforeNext' in err);
+      if (isRateLimited) {
+        httpError(next, new Error(responseMessage.TOO_MANY_REQUESTS), req, 429);
+      } else {
+        next();
+      }
     });
 };

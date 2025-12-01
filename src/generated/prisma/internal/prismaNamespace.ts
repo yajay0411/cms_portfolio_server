@@ -345,7 +345,8 @@ export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>;
 type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRef<Model, FieldType>;
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  Otp: 'Otp'
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -360,7 +361,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions;
   };
   meta: {
-    modelProps: 'user';
+    modelProps: 'user' | 'otp';
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -438,6 +439,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         };
       };
     };
+    Otp: {
+      payload: Prisma.$OtpPayload<ExtArgs>;
+      fields: Prisma.OtpFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.OtpFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.OtpFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        findFirst: {
+          args: Prisma.OtpFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.OtpFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        findMany: {
+          args: Prisma.OtpFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>[];
+        };
+        create: {
+          args: Prisma.OtpCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        createMany: {
+          args: Prisma.OtpCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.OtpCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>[];
+        };
+        delete: {
+          args: Prisma.OtpDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        update: {
+          args: Prisma.OtpUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        deleteMany: {
+          args: Prisma.OtpDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.OtpUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.OtpUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>[];
+        };
+        upsert: {
+          args: Prisma.OtpUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OtpPayload>;
+        };
+        aggregate: {
+          args: Prisma.OtpAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOtp>;
+        };
+        groupBy: {
+          args: Prisma.OtpGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.OtpGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.OtpCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.OtpCountAggregateOutputType> | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -479,10 +554,30 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  name: 'name'
+  mobile: 'mobile',
+  name: 'name',
+  passwordHash: 'passwordHash',
+  providers: 'providers',
+  lastLoginAt: 'lastLoginAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const;
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+
+export const OtpScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  mobile: 'mobile',
+  code: 'code',
+  type: 'type',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const;
+
+export type OtpScalarFieldEnum = (typeof OtpScalarFieldEnum)[keyof typeof OtpScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',
@@ -491,12 +586,27 @@ export const SortOrder = {
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const;
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 } as const;
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const;
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
 
 export const NullsOrder = {
   first: 'first',
@@ -510,16 +620,6 @@ export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
  */
 
 /**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
-
-/**
  * Reference to a field of type 'String'
  */
 export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>;
@@ -530,14 +630,44 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>;
 
 /**
- * Reference to a field of type 'Float'
+ * Reference to a field of type 'Json'
  */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>;
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>;
 
 /**
- * Reference to a field of type 'Float[]'
+ * Reference to a field of type 'QueryMode'
  */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>;
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>;
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>;
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>;
+
+/**
+ * Reference to a field of type 'ContactType'
+ */
+export type EnumContactTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContactType'>;
+
+/**
+ * Reference to a field of type 'ContactType[]'
+ */
+export type ListEnumContactTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContactType[]'>;
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
 
 /**
  * Batch Payload for updateMany & deleteMany & createMany
@@ -626,6 +756,7 @@ export type PrismaClientOptions = (
 };
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit;
+  otp?: Prisma.OtpOmit;
 };
 
 /* Types for Logging */

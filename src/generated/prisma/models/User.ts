@@ -19,63 +19,77 @@ export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayloa
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null;
-  _avg: UserAvgAggregateOutputType | null;
-  _sum: UserSumAggregateOutputType | null;
   _min: UserMinAggregateOutputType | null;
   _max: UserMaxAggregateOutputType | null;
 };
 
-export type UserAvgAggregateOutputType = {
-  id: number | null;
-};
-
-export type UserSumAggregateOutputType = {
-  id: number | null;
-};
-
 export type UserMinAggregateOutputType = {
-  id: number | null;
+  id: string | null;
   email: string | null;
+  mobile: string | null;
   name: string | null;
+  passwordHash: string | null;
+  lastLoginAt: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserMaxAggregateOutputType = {
-  id: number | null;
+  id: string | null;
   email: string | null;
+  mobile: string | null;
   name: string | null;
+  passwordHash: string | null;
+  lastLoginAt: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserCountAggregateOutputType = {
   id: number;
   email: number;
+  mobile: number;
   name: number;
+  passwordHash: number;
+  providers: number;
+  lastLoginAt: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
-};
-
-export type UserAvgAggregateInputType = {
-  id?: true;
-};
-
-export type UserSumAggregateInputType = {
-  id?: true;
 };
 
 export type UserMinAggregateInputType = {
   id?: true;
   email?: true;
+  mobile?: true;
   name?: true;
+  passwordHash?: true;
+  lastLoginAt?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type UserMaxAggregateInputType = {
   id?: true;
   email?: true;
+  mobile?: true;
   name?: true;
+  passwordHash?: true;
+  lastLoginAt?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type UserCountAggregateInputType = {
   id?: true;
   email?: true;
+  mobile?: true;
   name?: true;
+  passwordHash?: true;
+  providers?: true;
+  lastLoginAt?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -117,18 +131,6 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    *
-   * Select which fields to average
-   **/
-  _avg?: UserAvgAggregateInputType;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   *
-   * Select which fields to sum
-   **/
-  _sum?: UserSumAggregateInputType;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   *
    * Select which fields to find the minimum value
    **/
   _min?: UserMinAggregateInputType;
@@ -156,19 +158,21 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number;
   skip?: number;
   _count?: UserCountAggregateInputType | true;
-  _avg?: UserAvgAggregateInputType;
-  _sum?: UserSumAggregateInputType;
   _min?: UserMinAggregateInputType;
   _max?: UserMaxAggregateInputType;
 };
 
 export type UserGroupByOutputType = {
-  id: number;
-  email: string;
+  id: string;
+  email: string | null;
+  mobile: string | null;
   name: string | null;
+  passwordHash: string | null;
+  providers: runtime.JsonValue | null;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
   _count: UserCountAggregateOutputType | null;
-  _avg: UserAvgAggregateOutputType | null;
-  _sum: UserSumAggregateOutputType | null;
   _min: UserMinAggregateOutputType | null;
   _max: UserMaxAggregateOutputType | null;
 };
@@ -189,112 +193,193 @@ export type UserWhereInput = {
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
   OR?: Prisma.UserWhereInput[];
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
-  id?: Prisma.IntFilter<'User'> | number;
-  email?: Prisma.StringFilter<'User'> | string;
+  id?: Prisma.StringFilter<'User'> | string;
+  email?: Prisma.StringNullableFilter<'User'> | string | null;
+  mobile?: Prisma.StringNullableFilter<'User'> | string | null;
   name?: Prisma.StringNullableFilter<'User'> | string | null;
+  passwordHash?: Prisma.StringNullableFilter<'User'> | string | null;
+  providers?: Prisma.JsonNullableFilter<'User'>;
+  lastLoginAt?: Prisma.DateTimeNullableFilter<'User'> | Date | string | null;
+  createdAt?: Prisma.DateTimeFilter<'User'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string;
 };
 
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
-  email?: Prisma.SortOrder;
+  email?: Prisma.SortOrderInput | Prisma.SortOrder;
+  mobile?: Prisma.SortOrderInput | Prisma.SortOrder;
   name?: Prisma.SortOrderInput | Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder;
+  providers?: Prisma.SortOrderInput | Prisma.SortOrder;
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserWhereUniqueInput = Prisma.AtLeast<
   {
-    id?: number;
+    id?: string;
     email?: string;
+    mobile?: string;
     AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     name?: Prisma.StringNullableFilter<'User'> | string | null;
+    passwordHash?: Prisma.StringNullableFilter<'User'> | string | null;
+    providers?: Prisma.JsonNullableFilter<'User'>;
+    lastLoginAt?: Prisma.DateTimeNullableFilter<'User'> | Date | string | null;
+    createdAt?: Prisma.DateTimeFilter<'User'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string;
   },
-  'id' | 'email'
+  'id' | 'email' | 'mobile'
 >;
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
-  email?: Prisma.SortOrder;
+  email?: Prisma.SortOrderInput | Prisma.SortOrder;
+  mobile?: Prisma.SortOrderInput | Prisma.SortOrder;
   name?: Prisma.SortOrderInput | Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder;
+  providers?: Prisma.SortOrderInput | Prisma.SortOrder;
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.UserCountOrderByAggregateInput;
-  _avg?: Prisma.UserAvgOrderByAggregateInput;
   _max?: Prisma.UserMaxOrderByAggregateInput;
   _min?: Prisma.UserMinOrderByAggregateInput;
-  _sum?: Prisma.UserSumOrderByAggregateInput;
 };
 
 export type UserScalarWhereWithAggregatesInput = {
   AND?: Prisma.UserScalarWhereWithAggregatesInput | Prisma.UserScalarWhereWithAggregatesInput[];
   OR?: Prisma.UserScalarWhereWithAggregatesInput[];
   NOT?: Prisma.UserScalarWhereWithAggregatesInput | Prisma.UserScalarWhereWithAggregatesInput[];
-  id?: Prisma.IntWithAggregatesFilter<'User'> | number;
-  email?: Prisma.StringWithAggregatesFilter<'User'> | string;
+  id?: Prisma.StringWithAggregatesFilter<'User'> | string;
+  email?: Prisma.StringNullableWithAggregatesFilter<'User'> | string | null;
+  mobile?: Prisma.StringNullableWithAggregatesFilter<'User'> | string | null;
   name?: Prisma.StringNullableWithAggregatesFilter<'User'> | string | null;
+  passwordHash?: Prisma.StringNullableWithAggregatesFilter<'User'> | string | null;
+  providers?: Prisma.JsonNullableWithAggregatesFilter<'User'>;
+  lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<'User'> | Date | string | null;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
 };
 
 export type UserCreateInput = {
-  email: string;
+  id?: string;
+  email?: string | null;
+  mobile?: string | null;
   name?: string | null;
+  passwordHash?: string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUncheckedCreateInput = {
-  id?: number;
-  email: string;
+  id?: string;
+  email?: string | null;
+  mobile?: string | null;
   name?: string | null;
+  passwordHash?: string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateInput = {
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserCreateManyInput = {
-  id?: number;
-  email: string;
+  id?: string;
+  email?: string | null;
+  mobile?: string | null;
   name?: string | null;
+  passwordHash?: string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateManyMutationInput = {
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
+  mobile?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
-};
-
-export type UserAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
+  providers?: Prisma.SortOrder;
+  lastLoginAt?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
+  mobile?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
+  lastLoginAt?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
+  mobile?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
-};
-
-export type UserSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
+  lastLoginAt?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type StringFieldUpdateOperationsInput = {
@@ -305,12 +390,12 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null;
 };
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null;
+};
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string;
 };
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> =
@@ -318,7 +403,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     {
       id?: boolean;
       email?: boolean;
+      mobile?: boolean;
       name?: boolean;
+      passwordHash?: boolean;
+      providers?: boolean;
+      lastLoginAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
     },
     ExtArgs['result']['user']
   >;
@@ -328,7 +419,13 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     {
       id?: boolean;
       email?: boolean;
+      mobile?: boolean;
       name?: boolean;
+      passwordHash?: boolean;
+      providers?: boolean;
+      lastLoginAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
     },
     ExtArgs['result']['user']
   >;
@@ -338,7 +435,13 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     {
       id?: boolean;
       email?: boolean;
+      mobile?: boolean;
       name?: boolean;
+      passwordHash?: boolean;
+      providers?: boolean;
+      lastLoginAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
     },
     ExtArgs['result']['user']
   >;
@@ -346,11 +449,17 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type UserSelectScalar = {
   id?: boolean;
   email?: boolean;
+  mobile?: boolean;
   name?: boolean;
+  passwordHash?: boolean;
+  providers?: boolean;
+  lastLoginAt?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<
-  'id' | 'email' | 'name',
+  'id' | 'email' | 'mobile' | 'name' | 'passwordHash' | 'providers' | 'lastLoginAt' | 'createdAt' | 'updatedAt',
   ExtArgs['result']['user']
 >;
 
@@ -359,9 +468,15 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {};
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
-      id: number;
-      email: string;
+      id: string;
+      email: string | null;
+      mobile: string | null;
       name: string | null;
+      passwordHash: string | null;
+      providers: runtime.JsonValue | null;
+      lastLoginAt: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['user']
   >;
@@ -843,9 +958,15 @@ export interface Prisma__UserClient<
  * Fields of the User model
  */
 export interface UserFieldRefs {
-  readonly id: Prisma.FieldRef<'User', 'Int'>;
+  readonly id: Prisma.FieldRef<'User', 'String'>;
   readonly email: Prisma.FieldRef<'User', 'String'>;
+  readonly mobile: Prisma.FieldRef<'User', 'String'>;
   readonly name: Prisma.FieldRef<'User', 'String'>;
+  readonly passwordHash: Prisma.FieldRef<'User', 'String'>;
+  readonly providers: Prisma.FieldRef<'User', 'Json'>;
+  readonly lastLoginAt: Prisma.FieldRef<'User', 'DateTime'>;
+  readonly createdAt: Prisma.FieldRef<'User', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'User', 'DateTime'>;
 }
 
 // Custom InputTypes

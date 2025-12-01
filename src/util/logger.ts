@@ -1,5 +1,4 @@
 import util from 'node:util';
-import 'winston-mongodb';
 import { createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
@@ -7,7 +6,6 @@ import { red, blue, yellow, green, magenta, italic, cyan } from 'colorette';
 import * as sourceMapSupport from 'source-map-support';
 import config from '../config/app.config';
 import { ConsoleTransportInstance } from 'winston/lib/winston/transports';
-import { MongoDBTransportInstance } from 'winston-mongodb';
 
 sourceMapSupport.install();
 
@@ -60,21 +58,7 @@ const fileTransport = (): DailyRotateFile[] => [
   })
 ];
 
-const mongodbTransport = (): MongoDBTransportInstance[] => {
-  return [
-    new transports.MongoDB({
-      level: 'info',
-      db: config.MONGODB_URI,
-      metaKey: 'meta',
-      collection: 'application-logs',
-      tryReconnect: true,
-      options: {
-        retryWrites: true,
-        writeConcern: { w: 'majority' }
-      }
-    })
-  ];
-};
+//
 
 // ───────────────────────────────
 // 🧱 Logger instance (conditionally built)
@@ -82,7 +66,7 @@ const mongodbTransport = (): MongoDBTransportInstance[] => {
 const logger = isLoggingEnabled
   ? createLogger({
       defaultMeta: { meta: {} },
-      transports: [...fileTransport(), ...mongodbTransport(), ...consoleTransport()],
+      transports: [...fileTransport(), ...consoleTransport()],
       exceptionHandlers: [
         new DailyRotateFile({
           filename: path.join(__dirname, '../../logs/exceptions-%DATE%.log'),

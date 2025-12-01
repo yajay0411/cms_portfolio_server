@@ -1,49 +1,49 @@
-import jwt from 'jsonwebtoken';
-import { randomUUID } from 'crypto';
-import config from '@/config/app.config';
-import { JwtClaims, TokenPair } from '@/types/auth.type';
-import { blacklistService } from '@/service/redis/tokenBlacklist.service';
+// import jwt from 'jsonwebtoken';
+// import { randomUUID } from 'crypto';
+// import config from '@/config/app.config';
+// import { JwtClaims, TokenPair } from '@/types/auth.type';
+// import { blacklistService } from '@/service/redis/tokenBlacklist.service';
 
-export class TokenFactory {
-  private blacklist: Set<string> = new Set();
+// export class TokenFactory {
+//   private blacklist: Set<string> = new Set();
 
-  create(userId: string): TokenPair {
-    const sessionId = randomUUID();
+//   create(userId: string): TokenPair {
+//     const sessionId = randomUUID();
 
-    const accessToken = jwt.sign({ sub: userId, sid: sessionId } as JwtClaims, config.ACCESS_TOKEN_SECRET, {
-      expiresIn: config.ACCESS_TOKEN_TTL as jwt.SignOptions['expiresIn']
-    });
+//     const accessToken = jwt.sign({ sub: userId, sid: sessionId } as JwtClaims, config.ACCESS_TOKEN_SECRET, {
+//       expiresIn: config.ACCESS_TOKEN_TTL as jwt.SignOptions['expiresIn']
+//     });
 
-    const refreshToken = jwt.sign({ sub: userId, sid: sessionId } as JwtClaims, config.REFRESH_TOKEN_SECRET, {
-      expiresIn: config.REFRESH_TOKEN_TTL as jwt.SignOptions['expiresIn']
-    });
+//     const refreshToken = jwt.sign({ sub: userId, sid: sessionId } as JwtClaims, config.REFRESH_TOKEN_SECRET, {
+//       expiresIn: config.REFRESH_TOKEN_TTL as jwt.SignOptions['expiresIn']
+//     });
 
-    return { accessToken, refreshToken };
-  }
+//     return { accessToken, refreshToken };
+//   }
 
-  rotate(refreshToken: string): TokenPair {
-    const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET) as JwtClaims;
-    // Optionally assert sessionId is still valid in DB.
-    return this.create(decoded.sub);
-  }
+//   rotate(refreshToken: string): TokenPair {
+//     const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET) as JwtClaims;
+//     // Optionally assert sessionId is still valid in DB.
+//     return this.create(decoded.sub);
+//   }
 
-  verifyAccess(token: string): JwtClaims {
-    return jwt.verify(token, config.ACCESS_TOKEN_SECRET) as JwtClaims;
-  }
+//   verifyAccess(token: string): JwtClaims {
+//     return jwt.verify(token, config.ACCESS_TOKEN_SECRET) as JwtClaims;
+//   }
 
-  verifyAccessAndBlacklist(token: string): JwtClaims {
-    const decoded = this.verifyAccess(token);
-    if (this.blacklist.has(token)) {
-      throw new Error('INVALID_TOKEN');
-    }
-    return decoded;
-  }
+//   verifyAccessAndBlacklist(token: string): JwtClaims {
+//     const decoded = this.verifyAccess(token);
+//     if (this.blacklist.has(token)) {
+//       throw new Error('INVALID_TOKEN');
+//     }
+//     return decoded;
+//   }
 
-  blacklistToken(token: string, type: 'ACCESS' | 'REFRESH'): void {
-    if (type === 'ACCESS') {
-      blacklistService.blacklistAccessToken(token, 1 * 24 * 60 * 60);
-    } else {
-      blacklistService.blacklistRefreshToken(token, 1 * 24 * 60 * 60);
-    }
-  }
-}
+//   blacklistToken(token: string, type: 'ACCESS' | 'REFRESH'): void {
+//     if (type === 'ACCESS') {
+//       blacklistService.blacklistAccessToken(token, 1 * 24 * 60 * 60);
+//     } else {
+//       blacklistService.blacklistRefreshToken(token, 1 * 24 * 60 * 60);
+//     }
+//   }
+// }

@@ -13,10 +13,13 @@
     "preview": "pnpm run build && LOGGER=true dotenvx run --env-file .env.production -- node dist/server.js",
     "start:dev": "pm2 start ecosystem.config.js --env development",
     "start:prod": "pm2 start ecosystem.config.js --env production",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier . --check",
     "format:fix": "prettier --write .",
+    "type-check": "tsc --noEmit",
     "prepare": "husky",
     "clean": "rm -rf dist logs",
     "clean:all": "rm -rf dist logs node_modules"
@@ -38,6 +41,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
     "@types/source-map-support": "^0.5.10",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
@@ -51,6 +55,7 @@
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
     "prettier": "3.6.2",
+    "prisma": "^7.0.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
@@ -58,6 +63,8 @@
     "typescript-eslint": "^8.47.0"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.0.1",
+    "@prisma/client": "^7.0.1",
     "@react-email/render": "^2.0.0",
     "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "^3.0.3",
@@ -73,6 +80,7 @@
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.12.29",
     "mongoose": "^9.0.0",
+    "pg": "^8.16.3",
     "rate-limiter-flexible": "^8.3.0",
     "react-email": "^5.0.5",
     "redis": "^5.10.0",
@@ -85,3 +93,4 @@
     "winston-mongodb": "^7.0.1"
   }
 }
+

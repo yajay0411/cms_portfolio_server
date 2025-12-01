@@ -1,17 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
-import { rateLimiterMongo } from '../config/rateLimit.config';
+import { rateLimiter } from '../config/rateLimit.config';
 import httpError from '../util/httpError';
 import responseMessage from '../constant/responseMessage';
 
 export default (req: Request, _: Response, next: NextFunction): void => {
-  if (rateLimiterMongo) {
-    rateLimiterMongo
-      .consume(req.ip as string, 1)
-      .then(() => {
-        next();
-      })
-      .catch(() => {
-        httpError(next, new Error(responseMessage.TOO_MANY_REQUESTS), req, 429);
-      });
+  if (!rateLimiter) {
+    return next();
   }
+
+  rateLimiter
+    .consume(req.ip as string, 1)
+    .then(() => {
+      next();
+    })
+    .catch(() => {
+      httpError(next, new Error(responseMessage.TOO_MANY_REQUESTS), req, 429);
+    });
 };

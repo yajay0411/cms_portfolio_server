@@ -14,7 +14,8 @@ const envVarsSchema = Joi.object({
   CLIENT_URL: Joi.string().uri().default('http://localhost:3000'),
 
   // Database
-  MONGODB_URI: Joi.string().required().description('MongoDB connection string is required'),
+  DATABASE: Joi.string().valid('POSTGRES').default('POSTGRES'),
+  POSTGRES_URL: Joi.string().required().description('PostgreSQL connection string is required'),
 
   // Email Service
   SEND_GRID_API_SECRET: Joi.string().required().description('SendGrid API key is required'),
@@ -59,7 +60,8 @@ interface Config {
   PORT: number;
   SERVER_URL: string;
   CLIENT_URL: string;
-  MONGODB_URI: string;
+  DATABASE: string;
+  POSTGRES_URL: string;
   SEND_GRID_API_SECRET: string;
   EMAIL_FROM: string;
   ACCESS_TOKEN_SECRET: string;
@@ -86,7 +88,8 @@ const config: Config = Object.freeze({
   EMAIL_FROM: envVars.EMAIL_FROM as string,
 
   // Database
-  MONGODB_URI: envVars.MONGODB_URI as string,
+  DATABASE: envVars.DATABASE as string,
+  POSTGRES_URL: envVars.POSTGRES_URL as string,
 
   // Tokens
   ACCESS_TOKEN_SECRET: envVars.ACCESS_TOKEN_SECRET as string,

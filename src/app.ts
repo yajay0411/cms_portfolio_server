@@ -7,6 +7,10 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/app.config';
+import { EApplicationEnvironment } from './constant/application';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.config';
+import basicAuth from 'express-basic-auth';
 
 const app: Application = express();
 
@@ -42,6 +46,23 @@ app.use('/api/v1', router);
 app.get('/', (_req: Request, res: Response) => {
   res.send(`SERVER IS RUNNING: ${config.SERVER_URL}`);
 });
+
+// Swagger (development and production)
+if (config.ENV === EApplicationEnvironment.DEVELOPMENT) {
+  app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+} else {
+  if (config.SWAGGER_USER && config.SWAGGER_PASS) {
+    app.use(
+      '/api/v1/docs',
+      basicAuth({
+        users: { [config.SWAGGER_USER]: config.SWAGGER_PASS },
+        challenge: true
+      }),
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec)
+    );
+  }
+}
 
 // 404 Handler
 app.use((req: Request, _: Response, next: NextFunction) => {

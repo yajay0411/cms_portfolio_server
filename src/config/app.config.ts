@@ -15,7 +15,8 @@ const envVarsSchema = Joi.object({
 
   // Database
   DATABASE: Joi.string().valid('POSTGRES').default('POSTGRES'),
-  POSTGRES_URL: Joi.string().required().description('PostgreSQL connection string is required'),
+  DATABASE_URL: Joi.string().required().description('Database url string is required'),
+  MONGODB_URI: Joi.string().required().description('MongoDB connection string is required'),
 
   // Email Service
   SEND_GRID_API_SECRET: Joi.string().required().description('SendGrid API key is required'),
@@ -34,7 +35,11 @@ const envVarsSchema = Joi.object({
   GOOGLE_CLIENT_SECRET: Joi.string().required().description('Google OAuth client secret is required'),
 
   // Redis
-  REDIS_URL: Joi.string().required()
+  REDIS_URL: Joi.string().required(),
+
+  // Swagger basic auth
+  SWAGGER_USER: Joi.string().allow('').default(''),
+  SWAGGER_PASS: Joi.string().allow('').default('')
 }).unknown(true);
 
 // Validate environment variables
@@ -61,7 +66,8 @@ interface Config {
   SERVER_URL: string;
   CLIENT_URL: string;
   DATABASE: string;
-  POSTGRES_URL: string;
+  DATABASE_URL: string;
+  MONGODB_URI: string;
   SEND_GRID_API_SECRET: string;
   EMAIL_FROM: string;
   ACCESS_TOKEN_SECRET: string;
@@ -71,6 +77,8 @@ interface Config {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   REDIS_URL: string;
+  SWAGGER_USER: string;
+  SWAGGER_PASS: string;
 }
 
 // Create the config object with type safety
@@ -89,7 +97,8 @@ const config: Config = Object.freeze({
 
   // Database
   DATABASE: envVars.DATABASE as string,
-  POSTGRES_URL: envVars.POSTGRES_URL as string,
+  DATABASE_URL: envVars.DATABASE_URL as string,
+  MONGODB_URI: envVars.MONGODB_URI as string,
 
   // Tokens
   ACCESS_TOKEN_SECRET: envVars.ACCESS_TOKEN_SECRET as string,
@@ -104,7 +113,11 @@ const config: Config = Object.freeze({
   GOOGLE_CLIENT_SECRET: envVars.GOOGLE_CLIENT_SECRET as string,
 
   // Redis
-  REDIS_URL: envVars.REDIS_URL as string
+  REDIS_URL: envVars.REDIS_URL as string,
+
+  // Swagger basic auth
+  SWAGGER_USER: envVars.SWAGGER_USER as string,
+  SWAGGER_PASS: envVars.SWAGGER_PASS as string
 });
 
 // Log config in development

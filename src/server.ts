@@ -10,8 +10,11 @@ const initServer = async (): Promise<void> => {
   let server;
 
   try {
-    // Connect to Prisma (Postgres)
+    // Connect to Prisma
     await coreDatabase.connectPrisma();
+
+    // Connect to MongoDB
+    await coreDatabase.connectMongo();
 
     // Initialize Redis
     await initRedis();
@@ -24,6 +27,7 @@ const initServer = async (): Promise<void> => {
 
     logger.info(`APPLICATION_STARTED_SUCCESSFULLY`, {
       meta: {
+        ENV: config.ENV,
         PORT: config.PORT,
         SERVER_URL: config.SERVER_URL
       }

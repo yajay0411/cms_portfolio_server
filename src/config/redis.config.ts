@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 import config from './app.config';
 
 const redis = createClient({
-  url: config.REDIS_URL || 'redis://localhost:6379'
+  url: config.REDIS_URL
 });
 
 export const initRedis = async (): Promise<void> => {
@@ -15,6 +15,7 @@ redis.on('connect', async () => {
   logger.info('REDIS_CONNECTED_SUCCESSFULLY', {
     meta: {
       ENV: config.ENV,
+      REDIS_URL: config.REDIS_URL,
       Ping: demoValue
     }
   });

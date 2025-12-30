@@ -19,8 +19,8 @@ const envVarsSchema = Joi.object({
   MONGODB_URI: Joi.string().required().description('MongoDB connection string is required'),
 
   // Email Service
-  SEND_GRID_API_SECRET: Joi.string().required().description('SendGrid API key is required'),
-  EMAIL_FROM: Joi.string().email().default('noreply@example.com'),
+  // SEND_GRID_API_SECRET: Joi.string().required().description('SendGrid API key is required'),
+  // EMAIL_FROM: Joi.string().email().default('noreply@example.com'),
 
   // Tokens
   ACCESS_TOKEN_SECRET: Joi.string().min(32).required().description('API access token secret is required (min 32 chars)'),
@@ -68,8 +68,8 @@ interface Config {
   DATABASE: string;
   DATABASE_URL: string;
   MONGODB_URI: string;
-  SEND_GRID_API_SECRET: string;
-  EMAIL_FROM: string;
+  // SEND_GRID_API_SECRET: string;
+  // EMAIL_FROM: string;
   ACCESS_TOKEN_SECRET: string;
   REFRESH_TOKEN_SECRET: string;
   ACCESS_TOKEN_TTL: string;
@@ -92,8 +92,8 @@ const config: Config = Object.freeze({
   CLIENT_URL: envVars.CLIENT_URL as string,
 
   // Email Service
-  SEND_GRID_API_SECRET: envVars.SEND_GRID_API_SECRET as string,
-  EMAIL_FROM: envVars.EMAIL_FROM as string,
+  // SEND_GRID_API_SECRET: envVars.SEND_GRID_API_SECRET as string,
+  // EMAIL_FROM: envVars.EMAIL_FROM as string,
 
   // Database
   DATABASE: envVars.DATABASE as string,

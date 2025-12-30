@@ -28,49 +28,4 @@ export class GoogleOAuthService {
       picture: (data.picture as string | undefined) ?? null
     };
   }
-
-  async exchangeCodeForTokens(oauthCode: string, redirectUri: string): Promise<{ access_token: string }> {
-    const params = new URLSearchParams({
-      code: oauthCode,
-      client_id: config.GOOGLE_CLIENT_ID,
-      client_secret: config.GOOGLE_CLIENT_SECRET,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code'
-    });
-
-    const resp = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    });
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`GOOGLE_TOKEN_EXCHANGE_FAILED: ${text}`);
-    }
-    const data = (await resp.json()) as { access_token: string };
-    if (!data.access_token) throw new Error('GOOGLE_TOKEN_MISSING');
-    return { access_token: data.access_token };
-  }
-
-  async fetchUserProfile(accessToken: string): Promise<GoogleProfile> {
-    const resp = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`GOOGLE_USERINFO_FAILED: ${text}`);
-    }
-    const data = (await resp.json()) as Record<string, unknown>;
-    return {
-      id: String(data.id as string | number),
-      email: (data.email as string | undefined) ?? null,
-      name: (data.name as string | undefined) ?? null,
-      picture: (data.picture as string | undefined) ?? null
-    };
-  }
-
-  async exchangeCodeForProfile(oauthCode: string, redirectUri: string): Promise<GoogleProfile> {
-    const { access_token } = await this.exchangeCodeForTokens(oauthCode, redirectUri);
-    return this.fetchUserProfile(access_token);
-  }
 }

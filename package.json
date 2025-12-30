@@ -22,7 +22,10 @@
     "type-check": "tsc --noEmit",
     "prepare": "husky",
     "clean": "rm -rf dist logs",
-    "clean:all": "rm -rf dist logs node_modules"
+    "clean:all": "rm -rf dist logs node_modules",
+    "env:encrpty:all": "pnpm run env:encrypt:dev && pnpm run env:encrypt:prod",
+    "env:encrypt:dev": "dotenvx encrypt --env-file .env.development",
+    "env:encrypt:prod": "dotenvx encrypt --env-file .env.production"
   },
   "lint-staged": {
     "*.ts": [

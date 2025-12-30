@@ -25,7 +25,10 @@
     "clean:all": "rm -rf dist logs node_modules",
     "env:encrpty:all": "pnpm run env:encrypt:dev && pnpm run env:encrypt:prod",
     "env:encrypt:dev": "dotenvx encrypt --env-file .env.development",
-    "env:encrypt:prod": "dotenvx encrypt --env-file .env.production"
+    "env:encrypt:prod": "dotenvx encrypt --env-file .env.production",
+    "env:decrypt:all": "pnpm run env:decrypt:dev && pnpm run env:decrypt:prod",
+    "env:decrypt:dev": "dotenvx decrypt --env-file .env.development",
+    "env:decrypt:prod": "dotenvx decrypt --env-file .env.production"
   },
   "lint-staged": {
     "*.ts": [
